@@ -22,7 +22,7 @@ export const PLANETS: Record<string, PlanetConfig> = {
     id: 'moon',
     name: 'The Moon',
     gravityMultiplier: 0.166,
-    yearLengthMultiplier: 1.0, // We'll keep it as Earth years since it orbits Earth
+    yearLengthMultiplier: 13.379, // A lunar orbit (month) is ~27.3 days. 365.25 / 27.3 = 13.379 Moon "years" per Earth year
     skyColor: '#000000',
     groundColor: '#555555', // Dusty grey
     padColor: '#ffffff',
