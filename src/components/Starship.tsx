@@ -137,14 +137,16 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
     const percentage = Math.min(value / max, 1);
     const strokeDasharray = `${percentage * 100}, 100`;
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <svg width="100" height="100" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={color} strokeWidth="3" strokeDasharray={strokeDasharray} style={{ transition: 'stroke-dasharray 1s ease' }} />
-        </svg>
-        <div style={{ marginTop: '-65px', textAlign: 'center', marginBottom: '45px' }}>
-          <span style={{ fontSize: '1.2rem', fontWeight: 'bold', textShadow: `0 0 10px ${color}` }}>{value}</span><br/>
-          <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{unit}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{ position: 'relative', width: '100px', height: '100px' }}>
+          <svg width="100" height="100" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={color} strokeWidth="3" strokeDasharray={strokeDasharray} style={{ transition: 'stroke-dasharray 1s ease' }} />
+          </svg>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', textShadow: `0 0 10px ${color}` }}>{value}</span>
+            <span style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '-4px' }}>{unit}</span>
+          </div>
         </div>
         <span style={{ color: '#9ca3af', fontSize: '0.9rem', letterSpacing: '1px' }}>{label}</span>
       </div>
@@ -159,10 +161,10 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
       
       {/* The Touchscreen Dashboard */}
       {active && userData && (
-        <group position={[0, 0.2, -1.3]} rotation={[-Math.PI / 12, 0, 0]}>
+        <group position={[0, 0.1, -1.8]} rotation={[-Math.PI / 12, 0, 0]}>
           {/* Dashboard Physical Frame */}
           <mesh position={[0, 0, -0.05]}>
-            <boxGeometry args={[2.2, 1.4, 0.1]} />
+            <boxGeometry args={[1.8, 1.1, 0.1]} />
             <meshStandardMaterial color="#0a0a0a" metalness={0.9} roughness={0.1} />
           </mesh>
 
@@ -170,11 +172,12 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
           <Html 
             transform 
             position={[0, 0, 0.01]} 
-            distanceFactor={1.5}
+            distanceFactor={0.7}
             zIndexRange={[100, 0]}
             style={{
-              width: '800px',
-              height: '500px',
+              width: '900px',
+              height: '560px',
+              boxSizing: 'border-box',
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.6) 100%)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
               borderRadius: '24px',
@@ -282,19 +285,19 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                     {/* Holographic Biometrics */}
                     <div>
                       <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '16px' }}>BIOMETRICS HUD</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
-                          <User color="#60a5fa" size={32} />
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <User color="#60a5fa" size={32} style={{ flexShrink: 0 }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
                             <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Age</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{planet.name} Yrs</span></span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{planet.name} Yrs</span></span>
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
-                          <Ruler color="#60a5fa" size={32} />
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <Ruler color="#60a5fa" size={32} style={{ flexShrink: 0 }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
                             <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Height</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{userData.height} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userData.height} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
                           </div>
                         </div>
                       </div>
