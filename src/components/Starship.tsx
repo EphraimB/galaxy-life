@@ -4,7 +4,7 @@ import { PerspectiveCamera, Html } from '@react-three/drei';
 import { UserData } from './OnboardingForm';
 import { calculateAge } from '@/lib/utils';
 import { PLANETS, PlanetConfig } from '@/lib/planets';
-import { User, Ruler, Weight, Rocket, Activity, Navigation, AlertTriangle } from 'lucide-react';
+import { User, Ruler, Weight, Rocket, Activity, Navigation, AlertTriangle, MapPin, ChevronRight } from 'lucide-react';
 import * as THREE from 'three';
 
 interface Props {
@@ -22,6 +22,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
   const [countdown, setCountdown] = useState(3);
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
+  const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
   const planet = PLANETS[currentPlanetId];
   const mouse = useRef({ x: 0, y: 0 });
 
@@ -114,15 +115,16 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
     }
   };
 
-  const handleNavigate = (planetId: string) => {
-    if (travelState === 'orbiting') {
+  const handleNavigate = () => {
+    if (travelState === 'orbiting' && selectedDestination) {
       setTravelState('warping');
       
       // Simulate warp delay
       setTimeout(() => {
-        setCurrentPlanetId(planetId);
-        onPlanetChange(planetId);
+        setCurrentPlanetId(selectedDestination);
+        onPlanetChange(selectedDestination);
         setTravelState('descending');
+        setSelectedDestination(null);
       }, 2000);
     }
   };
@@ -155,92 +157,129 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
             style={{
               width: '800px',
               height: '500px',
-              background: 'rgba(0, 5, 20, 0.8)',
-              border: '2px solid #3b82f6',
-              borderRadius: '16px',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.6) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '24px',
               padding: '32px',
               color: 'white',
               fontFamily: 'var(--font-outfit), sans-serif',
-              boxShadow: travelState === 'pre-launch' ? '0 0 40px rgba(239, 68, 68, 0.8) inset' : '0 0 20px rgba(59, 130, 246, 0.5)',
+              boxShadow: travelState === 'pre-launch' 
+                ? '0 0 40px rgba(239, 68, 68, 0.8) inset, 0 8px 32px rgba(0, 0, 0, 0.5)' 
+                : '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(20px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(150%)',
               userSelect: 'none',
               WebkitUserSelect: 'none',
               transition: 'box-shadow 0.2s',
             }}
           >
-            <div>
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2.5rem', color: travelState === 'pre-launch' ? '#ef4444' : '#60a5fa', marginBottom: '16px', borderBottom: `1px solid ${travelState === 'pre-launch' ? '#ef4444' : '#3b82f6'}`, paddingBottom: '16px', transition: 'all 0.2s' }}>
-                {travelState === 'orbiting' || travelState === 'warping' ? <><Navigation size={36} /> Solar Navigation System</> : <><Activity size={36} /> {planet.name} Surface</>}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2rem', color: travelState === 'pre-launch' ? '#ef4444' : '#ffffff', marginBottom: '16px', borderBottom: `1px solid ${travelState === 'pre-launch' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255,255,255,0.1)'}`, paddingBottom: '16px', transition: 'all 0.2s', textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>
+                {travelState === 'orbiting' || travelState === 'warping' ? <><Navigation size={28} color="#60a5fa" /> Solar Navigation System</> : <><Activity size={28} color="#60a5fa" /> {planet.name} Surface</>}
               </h2>
               
               {travelState === 'orbiting' ? (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '32px' }}>
-                  {Object.values(PLANETS).map((p) => {
-                    // Create CSS gradients for planets
-                    const planetGradient = 
-                      p.id === 'earth' ? 'radial-gradient(circle at 30% 30%, #4ade80, #1e3a8a)' :
-                      p.id === 'mars' ? 'radial-gradient(circle at 30% 30%, #fb923c, #991b1b)' :
-                      'radial-gradient(circle at 30% 30%, #e5e7eb, #4b5563)'; // Moon
+                <div style={{ display: 'flex', gap: '24px', height: '100%' }}>
+                  {/* Solar System Mini-Map */}
+                  <div style={{ flex: 2, position: 'relative', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    
+                    {/* The Sun */}
+                    <div style={{ position: 'absolute', width: '40px', height: '40px', background: 'radial-gradient(circle, #fef08a, #f59e0b)', borderRadius: '50%', boxShadow: '0 0 40px #f59e0b', zIndex: 10 }} />
+                    
+                    {/* Earth Orbit Ring */}
+                    <div style={{ position: 'absolute', width: '160px', height: '160px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '50%' }} />
+                    {/* Mars Orbit Ring */}
+                    <div style={{ position: 'absolute', width: '280px', height: '280px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '50%' }} />
 
-                    return (
-                      <div 
-                        key={p.id}
-                        onClick={() => p.id !== currentPlanetId && handleNavigate(p.id)}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '16px',
-                          cursor: p.id === currentPlanetId ? 'default' : 'pointer',
-                          opacity: p.id === currentPlanetId ? 0.5 : 1,
-                          pointerEvents: 'auto',
-                          transition: 'transform 0.2s',
-                        }}
-                        onMouseOver={(e) => { if(p.id !== currentPlanetId) e.currentTarget.style.transform = 'scale(1.1)' }}
-                        onMouseOut={(e) => { if(p.id !== currentPlanetId) e.currentTarget.style.transform = 'scale(1)' }}
-                      >
-                        <div style={{
-                          width: '120px',
-                          height: '120px',
-                          borderRadius: '50%',
-                          background: planetGradient,
-                          boxShadow: `0 0 20px ${p.padColor}88, inset -10px -10px 20px rgba(0,0,0,0.5)`,
-                          border: p.id === currentPlanetId ? '4px solid #3b82f6' : 'none'
-                        }} />
-                        <div style={{ textAlign: 'center' }}>
-                          <h3 style={{ fontSize: '1.8rem', color: 'white', margin: 0 }}>{p.name}</h3>
-                          <p style={{ color: '#9ca3af', fontSize: '1.2rem', margin: '4px 0 0 0' }}>{p.gravityMultiplier} G</p>
+                    {/* Earth */}
+                    <div 
+                      onClick={() => setSelectedDestination('earth')}
+                      style={{ position: 'absolute', top: 'calc(50% - 80px)', left: '50%', transform: 'translate(-50%, -50%)', cursor: 'pointer', zIndex: 20 }}
+                    >
+                      {/* Moon Orbit Ring (relative to Earth) */}
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '50px', height: '50px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '50%' }} />
+                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #4ade80, #1e3a8a)', boxShadow: selectedDestination === 'earth' ? '0 0 15px #60a5fa' : 'none', border: selectedDestination === 'earth' ? '2px solid #fff' : 'none' }} />
+                      {currentPlanetId === 'earth' && <MapPin size={20} color="#ef4444" style={{ position: 'absolute', top: '-24px', left: '2px', filter: 'drop-shadow(0 0 5px #ef4444)' }} />}
+                    </div>
+
+                    {/* Moon */}
+                    <div 
+                      onClick={() => setSelectedDestination('moon')}
+                      style={{ position: 'absolute', top: 'calc(50% - 80px - 25px)', left: '50%', transform: 'translate(-50%, -50%)', cursor: 'pointer', zIndex: 20 }}
+                    >
+                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #e5e7eb, #4b5563)', boxShadow: selectedDestination === 'moon' ? '0 0 10px #e5e7eb' : 'none', border: selectedDestination === 'moon' ? '2px solid #fff' : 'none' }} />
+                      {currentPlanetId === 'moon' && <MapPin size={16} color="#ef4444" style={{ position: 'absolute', top: '-20px', left: '-2px', filter: 'drop-shadow(0 0 5px #ef4444)' }} />}
+                    </div>
+
+                    {/* Mars */}
+                    <div 
+                      onClick={() => setSelectedDestination('mars')}
+                      style={{ position: 'absolute', top: 'calc(50% + 99px)', left: 'calc(50% + 99px)', transform: 'translate(-50%, -50%)', cursor: 'pointer', zIndex: 20 }}
+                    >
+                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #fb923c, #991b1b)', boxShadow: selectedDestination === 'mars' ? '0 0 15px #fb923c' : 'none', border: selectedDestination === 'mars' ? '2px solid #fff' : 'none' }} />
+                      {currentPlanetId === 'mars' && <MapPin size={20} color="#ef4444" style={{ position: 'absolute', top: '-24px', left: '0px', filter: 'drop-shadow(0 0 5px #ef4444)' }} />}
+                    </div>
+
+                  </div>
+
+                  {/* Destination Info Panel */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <p style={{ color: '#9ca3af', margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Destination</p>
+                    {selectedDestination ? (
+                      <>
+                        <h3 style={{ fontSize: '2.5rem', margin: 0, color: 'white', textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>{PLANETS[selectedDestination].name}</h3>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '1.2rem' }}>
+                          <p style={{ margin: 0 }}><strong>Gravity:</strong> {PLANETS[selectedDestination].gravityMultiplier} G</p>
+                          <p style={{ margin: 0 }}><strong>Year Length:</strong> {PLANETS[selectedDestination].yearLengthMultiplier === 1.0 && selectedDestination !== 'earth' ? 'N/A' : `${PLANETS[selectedDestination].yearLengthMultiplier} Earth Yrs`}</p>
                         </div>
+                        {selectedDestination === currentPlanetId ? (
+                          <div style={{ padding: '16px', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '8px', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)' }}>
+                            CURRENT LOCATION
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={handleNavigate}
+                            style={{ padding: '16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                          >
+                            WARP <ChevronRight size={20} />
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '1.2rem', textAlign: 'center' }}>
+                        Select a planet from the orbital map
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '24px', borderRadius: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid #333', paddingBottom: '8px' }}>BIOMETRICS</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <User color="#60a5fa" />
-                      <span><strong>Age:</strong> {calculateAge(userData.birthdate, planet.yearLengthMultiplier)} {planet.name} Yrs</span>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '1.5rem', background: 'rgba(0,0,0,0.2)', padding: '32px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px' }}>BIOMETRICS</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}><User color="#60a5fa" size={28} /></div>
+                      <span><strong>Age:</strong> {calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{planet.name} Yrs</span></span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Ruler color="#60a5fa" />
-                      <span><strong>Height:</strong> {userData.height} {userData.unit === 'metric' ? 'cm' : 'in'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}><Ruler color="#60a5fa" size={28} /></div>
+                      <span><strong>Height:</strong> {userData.height} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid #333', paddingBottom: '8px' }}>ENVIRONMENT</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Activity color="#4ade80" />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px' }}>ENVIRONMENT</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.2)', borderRadius: '12px' }}><Activity color="#4ade80" size={28} /></div>
                       <span><strong>Gravity:</strong> {travelState === 'warping' ? 'Microgravity' : `${planet.gravityMultiplier} G`}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Weight color={travelState === 'warping' ? '#4ade80' : '#60a5fa'} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ padding: '12px', background: travelState === 'warping' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}>
+                        <Weight color={travelState === 'warping' ? '#4ade80' : '#60a5fa'} size={28} />
+                      </div>
                       <span style={{ color: travelState === 'warping' ? '#4ade80' : 'white' }}>
-                        <strong>Weight:</strong> {currentWeight} {userData.unit === 'metric' ? 'kg' : 'lbs'}
+                        <strong>Weight:</strong> {currentWeight} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{userData.unit === 'metric' ? 'kg' : 'lbs'}</span>
                       </span>
                     </div>
                   </div>
