@@ -1,0 +1,61 @@
+.main {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.canvasContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: filter 1s ease;
+  z-index: 1;
+}
+
+.canvasContainer.blurred {
+  filter: blur(8px) brightness(0.5);
+}
+
+.uiOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none; /* Let clicks pass through to 3D scene */
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto; /* Re-enable clicks for the form */
+  padding: 20px;
+}
+
+.hud {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  pointer-events: auto;
+  min-width: 250px;
+}
+
+.hud h2 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: var(--accent-blue);
+}
+
+.hud p {
+  color: #ccc;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
