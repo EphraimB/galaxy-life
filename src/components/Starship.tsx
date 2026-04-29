@@ -159,6 +159,48 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
           Position it higher (y=0.5) to act as the pilot's head, giving a better view of the station. */}
       <PerspectiveCamera makeDefault position={[0, 0.5, 0]} fov={60} />
       
+      {/* Full-Screen Launch Cinematic */}
+      {travelState === 'pre-launch' && (
+        <Html wrapperClass="launch-overlay" zIndexRange={[999999, 0]}>
+          <style>{`
+            .launch-overlay {
+              position: fixed !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100vw !important;
+              height: 100vh !important;
+              transform: none !important;
+              pointer-events: none !important;
+            }
+            @keyframes alarmPulse {
+              0% { box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.3); border: 10px solid rgba(239, 68, 68, 0.3); }
+              50% { box-shadow: inset 0 0 250px rgba(239, 68, 68, 0.9); border: 10px solid rgba(239, 68, 68, 0.9); }
+              100% { box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.3); border: 10px solid rgba(239, 68, 68, 0.3); }
+            }
+          `}</style>
+          <div style={{
+            width: '100%', height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animation: 'alarmPulse 1s infinite',
+          }}>
+            <h1 style={{
+              fontSize: '15vw',
+              color: 'white',
+              fontFamily: 'var(--font-outfit), sans-serif',
+              fontWeight: 'bold',
+              textShadow: '0 0 50px rgba(239, 68, 68, 1), 0 0 100px rgba(239, 68, 68, 1)',
+              margin: 0,
+              padding: 0,
+              letterSpacing: '-2px'
+            }}>
+              T-{countdown}
+            </h1>
+          </div>
+        </Html>
+      )}
+
       {/* The Touchscreen Dashboard */}
       {active && userData && (
         <group position={[0, 0.1, -1.8]} rotation={[-Math.PI / 12, 0, 0]}>
@@ -337,7 +379,6 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         <div style={{ background: travelState === 'pre-launch' ? '#ef4444' : '#4ade80', padding: '8px', borderRadius: '50%', boxShadow: travelState === 'pre-launch' ? '0 0 20px #ef4444' : '0 0 20px #4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Rocket color="white" size={20} style={{ transform: 'rotate(-45deg)' }} />
                         </div>
-                        {travelState === 'pre-launch' && <div style={{ position: 'absolute', left: '44px', top: '5px', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '0 0 10px #ef4444', fontSize: '1.2rem' }}>IGNITION: T-{countdown}</div>}
                       </div>
 
                       {/* Surface Node */}
@@ -369,21 +410,21 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
               </div>
 
               {/* Status Indicator */}
-              {travelState !== 'landed' && travelState !== 'orbiting' && (
+              {travelState !== 'landed' && travelState !== 'orbiting' && travelState !== 'pre-launch' && (
                 <div style={{ 
                   background: 'rgba(0,0,0,0.8)', 
-                  border: `1px solid ${travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
-                  color: travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b',
+                  border: `1px solid ${travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
+                  color: travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b',
                   padding: '8px 16px',
                   borderRadius: '4px',
                   fontSize: '1rem',
                   letterSpacing: '3px',
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
-                  textShadow: `0 0 10px ${travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
-                  boxShadow: `0 0 15px ${travelState === 'pre-launch' ? 'rgba(239,68,68,0.3)' : travelState === 'ascending' ? 'rgba(74,222,128,0.3)' : travelState === 'warping' ? 'rgba(139,92,246,0.3)' : 'rgba(245,158,11,0.3)'}`
+                  textShadow: `0 0 10px ${travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
+                  boxShadow: `0 0 15px ${travelState === 'ascending' ? 'rgba(74,222,128,0.3)' : travelState === 'warping' ? 'rgba(139,92,246,0.3)' : 'rgba(245,158,11,0.3)'}`
                 }}>
-                  {travelState === 'pre-launch' ? 'IGNITION SEQ' : travelState === 'ascending' ? 'ASCENDING' : travelState === 'descending' ? 'DESCENDING' : 'WARP ACTIVE'}
+                  {travelState === 'ascending' ? 'ASCENDING' : travelState === 'descending' ? 'DESCENDING' : 'WARP ACTIVE'}
                 </div>
               )}
             </div>
