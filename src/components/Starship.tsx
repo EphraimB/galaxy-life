@@ -394,39 +394,67 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
               )}
             </div>
 
-            {/* Digital Altimeter HUD */}
-            <div style={{ position: 'absolute', right: '32px', top: '32px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '4px', padding: '12px 24px', boxShadow: '0 0 15px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.1)', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: travelState === 'ascending' || travelState === 'pre-launch' ? '#ef4444' : travelState === 'descending' ? '#f59e0b' : '#38bdf8' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <span style={{ color: '#7dd3fc', fontSize: '0.9rem', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '2px' }}>ALTITUDE</span>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: '3rem', color: '#e0f2fe', fontWeight: 'bold', textShadow: '0 0 10px rgba(56, 189, 248, 0.8)', fontVariantNumeric: 'tabular-nums' }}>
-                      {String(Math.floor(altitude * 1000)).padStart(4, '0')}
-                    </span>
-                    <span style={{ color: '#38bdf8', fontSize: '1.2rem', fontWeight: 'bold' }}>M</span>
-                  </div>
-                </div>
+            {/* Status Bar — in normal document flow, no overlap */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginTop: '16px',
+              padding: '12px 20px',
+              background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.5) 100%)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              flexShrink: 0,
+            }}>
+              {/* Current Location */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: planet.padColor, boxShadow: `0 0 8px ${planet.padColor}` }} />
+                <span style={{ color: '#9ca3af', fontSize: '0.9rem', letterSpacing: '1px' }}>{planet.name.toUpperCase()}</span>
               </div>
 
-              {/* Status Indicator */}
-              {travelState !== 'landed' && travelState !== 'orbiting' && travelState !== 'pre-launch' && (
-                <div style={{ 
-                  background: 'rgba(0,0,0,0.8)', 
-                  border: `1px solid ${travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
-                  color: travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  letterSpacing: '3px',
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  textShadow: `0 0 10px ${travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
-                  boxShadow: `0 0 15px ${travelState === 'ascending' ? 'rgba(74,222,128,0.3)' : travelState === 'warping' ? 'rgba(139,92,246,0.3)' : 'rgba(245,158,11,0.3)'}`
-                }}>
-                  {travelState === 'ascending' ? 'ASCENDING' : travelState === 'descending' ? 'DESCENDING' : 'WARP ACTIVE'}
-                </div>
-              )}
+              {/* Flight Status */}
+              <div style={{
+                padding: '4px 16px',
+                borderRadius: '20px',
+                fontSize: '0.85rem',
+                letterSpacing: '2px',
+                fontWeight: 'bold',
+                background: travelState === 'landed' ? 'rgba(74, 222, 128, 0.15)' 
+                  : travelState === 'ascending' ? 'rgba(74, 222, 128, 0.2)' 
+                  : travelState === 'descending' ? 'rgba(245, 158, 11, 0.2)' 
+                  : travelState === 'warping' ? 'rgba(139, 92, 246, 0.2)'
+                  : travelState === 'orbiting' ? 'rgba(56, 189, 248, 0.15)'
+                  : 'rgba(239, 68, 68, 0.2)',
+                color: travelState === 'landed' ? '#4ade80' 
+                  : travelState === 'ascending' ? '#4ade80' 
+                  : travelState === 'descending' ? '#f59e0b' 
+                  : travelState === 'warping' ? '#8b5cf6'
+                  : travelState === 'orbiting' ? '#38bdf8'
+                  : '#ef4444',
+                border: `1px solid ${travelState === 'landed' ? 'rgba(74, 222, 128, 0.3)' 
+                  : travelState === 'ascending' ? 'rgba(74, 222, 128, 0.4)' 
+                  : travelState === 'descending' ? 'rgba(245, 158, 11, 0.4)' 
+                  : travelState === 'warping' ? 'rgba(139, 92, 246, 0.4)'
+                  : travelState === 'orbiting' ? 'rgba(56, 189, 248, 0.3)'
+                  : 'rgba(239, 68, 68, 0.4)'}`,
+              }}>
+                {travelState === 'landed' ? '● DOCKED' 
+                  : travelState === 'ascending' ? '▲ ASCENDING' 
+                  : travelState === 'descending' ? '▼ DESCENDING' 
+                  : travelState === 'warping' ? '◆ WARP ACTIVE'
+                  : travelState === 'orbiting' ? '○ IN ORBIT'
+                  : '⚠ IGNITION'}
+              </div>
+
+              {/* Altimeter */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#7dd3fc', fontSize: '0.8rem', letterSpacing: '1px' }}>ALT</span>
+                <span style={{ fontFamily: 'monospace', fontSize: '1.3rem', color: '#e0f2fe', fontWeight: 'bold', fontVariantNumeric: 'tabular-nums' }}>
+                  {String(Math.floor(altitude * 1000)).padStart(5, '0')}
+                </span>
+                <span style={{ color: '#38bdf8', fontSize: '0.8rem', fontWeight: 'bold' }}>M</span>
+              </div>
             </div>
           </Html>
         </group>
