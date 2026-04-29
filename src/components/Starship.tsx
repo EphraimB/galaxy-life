@@ -133,6 +133,24 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
     ? 0 
     : (userData?.weight! * planet.gravityMultiplier).toFixed(1);
 
+  const CircularGauge = ({ label, value, max, unit, color }: any) => {
+    const percentage = Math.min(value / max, 1);
+    const strokeDasharray = `${percentage * 100}, 100`;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <svg width="100" height="100" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={color} strokeWidth="3" strokeDasharray={strokeDasharray} style={{ transition: 'stroke-dasharray 1s ease' }} />
+        </svg>
+        <div style={{ marginTop: '-65px', textAlign: 'center', marginBottom: '45px' }}>
+          <span style={{ fontSize: '1.2rem', fontWeight: 'bold', textShadow: `0 0 10px ${color}` }}>{value}</span><br/>
+          <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{unit}</span>
+        </div>
+        <span style={{ color: '#9ca3af', fontSize: '0.9rem', letterSpacing: '1px' }}>{label}</span>
+      </div>
+    );
+  };
+
   return (
     <group ref={shipRef} position={[0, 0, 0]}>
       {/* Make the camera a child of the ship so it moves with it. 
@@ -256,84 +274,100 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                   </div>
                 </div>
               ) : (
-                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '1.5rem', background: 'rgba(0,0,0,0.2)', padding: '32px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px' }}>BIOMETRICS</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}><User color="#60a5fa" size={28} /></div>
-                      <span><strong>Age:</strong> {calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{planet.name} Yrs</span></span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}><Ruler color="#60a5fa" size={28} /></div>
-                      <span><strong>Height:</strong> {userData.height} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px' }}>ENVIRONMENT</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.2)', borderRadius: '12px' }}><Activity color="#4ade80" size={28} /></div>
-                      <span><strong>Gravity:</strong> {travelState === 'warping' ? 'Microgravity' : `${planet.gravityMultiplier} G`}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ padding: '12px', background: travelState === 'warping' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}>
-                        <Weight color={travelState === 'warping' ? '#4ade80' : '#60a5fa'} size={28} />
+                <div style={{ flex: 1, display: 'flex', gap: '32px', background: 'rgba(0,0,0,0.2)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  
+                  {/* Left Column: Biometrics & Gauges */}
+                  <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '24px', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '32px' }}>
+                    
+                    {/* Holographic Biometrics */}
+                    <div>
+                      <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '16px' }}>BIOMETRICS HUD</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
+                          <User color="#60a5fa" size={32} />
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Age</span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{planet.name} Yrs</span></span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
+                          <Ruler color="#60a5fa" size={32} />
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Height</span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{userData.height} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
+                          </div>
+                        </div>
                       </div>
-                      <span style={{ color: travelState === 'warping' ? '#4ade80' : 'white' }}>
-                        <strong>Weight:</strong> {currentWeight} <span style={{fontSize: '1.2rem', color: '#9ca3af'}}>{userData.unit === 'metric' ? 'kg' : 'lbs'}</span>
-                      </span>
+                    </div>
+
+                    {/* Circular Environment Gauges */}
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '16px' }}>ENVIRONMENTAL READINGS</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '120px' }}>
+                        <CircularGauge label="GRAVITY" value={planet.gravityMultiplier} max={3} unit="G" color="#4ade80" />
+                        <CircularGauge label="WEIGHT" value={currentWeight} max={userData?.weight! * 3} unit={userData.unit === 'metric' ? 'kg' : 'lbs'} color="#f59e0b" />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Right Column: Vertical Flight Map */}
+                  <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', padding: '12px 24px' }}>
+                    <p style={{ color: '#9ca3af', margin: 0, fontSize: '1.2rem', letterSpacing: '1px', textAlign: 'center', marginBottom: '16px' }}>FLIGHT TRAJECTORY</p>
+                    
+                    <div style={{ flex: 1, position: 'relative', borderLeft: '2px dashed rgba(255,255,255,0.2)', marginLeft: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      
+                      {/* Orbit Target Node */}
+                      <div 
+                        onClick={handleLaunch} 
+                        style={{ cursor: travelState === 'landed' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '-11px', position: 'relative', zIndex: 10 }}
+                        onMouseOver={(e) => { if (travelState === 'landed') e.currentTarget.style.transform = 'scale(1.05)' }}
+                        onMouseOut={(e) => { if (travelState === 'landed') e.currentTarget.style.transform = 'scale(1)' }}
+                      >
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: travelState === 'landed' ? '#3b82f6' : 'rgba(255,255,255,0.2)', boxShadow: travelState === 'landed' ? '0 0 15px #3b82f6' : 'none', border: travelState === 'landed' ? '2px solid white' : 'none', transition: 'all 0.2s' }} />
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: travelState === 'landed' ? '#3b82f6' : '#9ca3af', textShadow: travelState === 'landed' ? '0 0 10px #3b82f6' : 'none' }}>
+                          {travelState === 'landed' ? 'CLICK TO LAUNCH' : 'LOW ORBIT'}
+                        </span>
+                      </div>
+
+                      {/* Rocket Icon */}
+                      <div style={{ position: 'absolute', left: '-19px', bottom: `${Math.max(0, (altitude / 1000) * 100)}%`, transition: 'bottom 0.1s linear', zIndex: 20 }}>
+                        <div style={{ background: travelState === 'pre-launch' ? '#ef4444' : '#4ade80', padding: '8px', borderRadius: '50%', boxShadow: travelState === 'pre-launch' ? '0 0 20px #ef4444' : '0 0 20px #4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Rocket color="white" size={20} style={{ transform: 'rotate(-45deg)' }} />
+                        </div>
+                        {travelState === 'pre-launch' && <div style={{ position: 'absolute', left: '44px', top: '5px', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '0 0 10px #ef4444', fontSize: '1.2rem' }}>IGNITION: T-{countdown}</div>}
+                      </div>
+
+                      {/* Surface Node */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '-11px', position: 'relative', zIndex: 10 }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: planet.padColor, boxShadow: `0 0 15px ${planet.padColor}`, border: '2px solid white' }} />
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: planet.padColor, textShadow: `0 0 10px ${planet.padColor}` }}>{planet.name.toUpperCase()}</span>
+                      </div>
+                      
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '2rem', color: travelState === 'pre-launch' ? '#ef4444' : '#f87171', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '8px' }}>
+            {/* Remove the old bottom bar with the big button since it's in the map now */}
+            <div style={{ position: 'absolute', right: '32px', bottom: '32px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: travelState === 'pre-launch' ? '#ef4444' : '#f87171', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '8px', border: `1px solid ${travelState === 'pre-launch' ? '#ef4444' : 'rgba(248, 113, 113, 0.3)'}` }}>
                 <Rocket /> ALT: {Math.floor(altitude * 1000)} M
               </div>
               
-              {travelState === 'landed' && (
-                <button 
-                  onClick={handleLaunch}
-                  style={{
-                    background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-                    color: 'white',
-                    border: '1px solid #f87171',
-                    padding: '20px 48px',
-                    fontSize: '1.8rem',
-                    fontWeight: 'bold',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)',
-                    transition: 'all 0.2s',
-                    pointerEvents: 'auto',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px'
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.8)' }}
-                  onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)' }}
-                >
-                  <AlertTriangle /> INITIATE LAUNCH
-                </button>
-              )}
-              {travelState === 'pre-launch' && (
-                <div style={{ color: '#ef4444', fontSize: '2.5rem', fontWeight: 'bold', textShadow: '0 0 20px #ef4444', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <AlertTriangle size={48} /> ENGINE IGNITION... T-MINUS {countdown}
-                </div>
-              )}
               {travelState === 'ascending' && (
-                <div style={{ color: '#4ade80', fontSize: '2rem', fontWeight: 'bold', textShadow: '0 0 10px #4ade80' }}>
+                <div style={{ marginLeft: '24px', color: '#4ade80', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #4ade80' }}>
                   ASCENDING...
                 </div>
               )}
               {travelState === 'descending' && (
-                <div style={{ color: '#f59e0b', fontSize: '2rem', fontWeight: 'bold', textShadow: '0 0 10px #f59e0b' }}>
+                <div style={{ marginLeft: '24px', color: '#f59e0b', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #f59e0b' }}>
                   DESCENDING...
                 </div>
               )}
               {travelState === 'warping' && (
-                <div style={{ color: '#8b5cf6', fontSize: '2rem', fontWeight: 'bold', textShadow: '0 0 10px #8b5cf6' }}>
+                <div style={{ marginLeft: '24px', color: '#8b5cf6', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #8b5cf6' }}>
                   WARP DRIVE ACTIVE
                 </div>
               )}
