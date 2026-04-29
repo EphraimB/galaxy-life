@@ -353,25 +353,37 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
               )}
             </div>
 
-            {/* Remove the old bottom bar with the big button since it's in the map now */}
-            <div style={{ position: 'absolute', right: '32px', bottom: '32px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: travelState === 'pre-launch' ? '#ef4444' : '#f87171', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '8px', border: `1px solid ${travelState === 'pre-launch' ? '#ef4444' : 'rgba(248, 113, 113, 0.3)'}` }}>
-                <Rocket /> ALT: {Math.floor(altitude * 1000)} M
+            {/* Digital Altimeter HUD */}
+            <div style={{ position: 'absolute', right: '32px', top: '32px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '4px', padding: '12px 24px', boxShadow: '0 0 15px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.1)', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: travelState === 'ascending' || travelState === 'pre-launch' ? '#ef4444' : travelState === 'descending' ? '#f59e0b' : '#38bdf8' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <span style={{ color: '#7dd3fc', fontSize: '0.9rem', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '2px' }}>ALTITUDE</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '3rem', color: '#e0f2fe', fontWeight: 'bold', textShadow: '0 0 10px rgba(56, 189, 248, 0.8)', fontVariantNumeric: 'tabular-nums' }}>
+                      {String(Math.floor(altitude * 1000)).padStart(4, '0')}
+                    </span>
+                    <span style={{ color: '#38bdf8', fontSize: '1.2rem', fontWeight: 'bold' }}>M</span>
+                  </div>
+                </div>
               </div>
-              
-              {travelState === 'ascending' && (
-                <div style={{ marginLeft: '24px', color: '#4ade80', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #4ade80' }}>
-                  ASCENDING...
-                </div>
-              )}
-              {travelState === 'descending' && (
-                <div style={{ marginLeft: '24px', color: '#f59e0b', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #f59e0b' }}>
-                  DESCENDING...
-                </div>
-              )}
-              {travelState === 'warping' && (
-                <div style={{ marginLeft: '24px', color: '#8b5cf6', fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 10px #8b5cf6' }}>
-                  WARP DRIVE ACTIVE
+
+              {/* Status Indicator */}
+              {travelState !== 'landed' && travelState !== 'orbiting' && (
+                <div style={{ 
+                  background: 'rgba(0,0,0,0.8)', 
+                  border: `1px solid ${travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
+                  color: travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  fontSize: '1rem',
+                  letterSpacing: '3px',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  textShadow: `0 0 10px ${travelState === 'pre-launch' ? '#ef4444' : travelState === 'ascending' ? '#4ade80' : travelState === 'warping' ? '#8b5cf6' : '#f59e0b'}`,
+                  boxShadow: `0 0 15px ${travelState === 'pre-launch' ? 'rgba(239,68,68,0.3)' : travelState === 'ascending' ? 'rgba(74,222,128,0.3)' : travelState === 'warping' ? 'rgba(139,92,246,0.3)' : 'rgba(245,158,11,0.3)'}`
+                }}>
+                  {travelState === 'pre-launch' ? 'IGNITION SEQ' : travelState === 'ascending' ? 'ASCENDING' : travelState === 'descending' ? 'DESCENDING' : 'WARP ACTIVE'}
                 </div>
               )}
             </div>
