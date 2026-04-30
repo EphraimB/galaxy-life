@@ -4,7 +4,7 @@ import { PerspectiveCamera, Html } from '@react-three/drei';
 import { UserData } from './OnboardingForm';
 import { calculateAge } from '@/lib/utils';
 import { PLANETS, PlanetConfig } from '@/lib/planets';
-import { User, Ruler, Weight, Rocket, Activity, Navigation, AlertTriangle, MapPin, ChevronRight } from 'lucide-react';
+import { User, Ruler, Weight, Rocket, Activity, Navigation, AlertTriangle, MapPin, ChevronRight, Zap } from 'lucide-react';
 import * as THREE from 'three';
 
 interface Props {
@@ -23,6 +23,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
+  const [displayUnit, setDisplayUnit] = useState<'metric' | 'imperial'>(userData?.unit || 'imperial');
   const planet = PLANETS[currentPlanetId];
   const mouse = useRef({ x: 0, y: 0 });
 
@@ -129,9 +130,17 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
     }
   };
 
-  const currentWeight = travelState === 'orbiting' || travelState === 'warping' 
-    ? 0 
-    : (userData?.weight! * planet.gravityMultiplier).toFixed(1);
+  const rawWeight = (userData?.weight ?? 0) * planet.gravityMultiplier;
+  const displayWeight = displayUnit === 'metric'
+    ? (userData?.unit === 'metric' ? rawWeight : rawWeight * 0.453592).toFixed(1)
+    : (userData?.unit === 'imperial' ? rawWeight : rawWeight * 2.20462).toFixed(1);
+  const weightUnit = displayUnit === 'metric' ? 'kg' : 'lbs';
+
+  const h = userData?.height ?? 0;
+  const displayHeight = displayUnit === 'metric'
+    ? (userData?.unit === 'metric' ? h : (h * 2.54).toFixed(1))
+    : (userData?.unit === 'imperial' ? h : (h / 2.54).toFixed(1));
+  const heightUnit = displayUnit === 'metric' ? 'cm' : 'in';
 
   const CircularGauge = ({ label, value, max, unit, color }: any) => {
     const percentage = Math.min(value / max, 1);
@@ -242,6 +251,23 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2rem', color: travelState === 'pre-launch' ? '#ef4444' : '#ffffff', marginBottom: '16px', borderBottom: `1px solid ${travelState === 'pre-launch' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255,255,255,0.1)'}`, paddingBottom: '16px', transition: 'all 0.2s', textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>
                 {travelState === 'orbiting' || travelState === 'warping' ? <><Navigation size={28} color="#60a5fa" /> Solar Navigation System</> : <><Activity size={28} color="#60a5fa" /> {planet.name} Surface</>}
+                <div 
+                  onClick={() => setDisplayUnit(displayUnit === 'metric' ? 'imperial' : 'metric')}
+                  style={{ 
+                    marginLeft: 'auto', cursor: 'pointer', fontSize: '0.8rem', letterSpacing: '1px',
+                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '20px', padding: '4px 2px', display: 'flex', position: 'relative',
+                    width: '100px',
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute', top: '2px', left: displayUnit === 'metric' ? '2px' : '50px',
+                    width: '48px', height: 'calc(100% - 4px)', background: 'rgba(96, 165, 250, 0.3)',
+                    borderRadius: '16px', transition: 'left 0.2s',
+                  }} />
+                  <span style={{ flex: 1, textAlign: 'center', zIndex: 1, color: displayUnit === 'metric' ? '#60a5fa' : '#6b7280', fontWeight: displayUnit === 'metric' ? 'bold' : 'normal' }}>MET</span>
+                  <span style={{ flex: 1, textAlign: 'center', zIndex: 1, color: displayUnit === 'imperial' ? '#60a5fa' : '#6b7280', fontWeight: displayUnit === 'imperial' ? 'bold' : 'normal' }}>IMP</span>
+                </div>
               </h2>
               
               {travelState === 'orbiting' ? (
@@ -305,9 +331,25 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         ) : (
                           <button 
                             onClick={handleNavigate}
-                            style={{ padding: '16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                            style={{
+                              width: '64px',
+                              height: '64px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)',
+                              color: 'white',
+                              border: '2px solid rgba(255,255,255,0.3)',
+                              cursor: 'pointer',
+                              boxShadow: '0 0 25px rgba(139, 92, 246, 0.6), inset 0 0 15px rgba(255,255,255,0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              alignSelf: 'center',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(139, 92, 246, 0.9), inset 0 0 20px rgba(255,255,255,0.2)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.6), inset 0 0 15px rgba(255,255,255,0.1)'; }}
                           >
-                            WARP <ChevronRight size={20} />
+                            <Zap size={28} fill="white" />
                           </button>
                         )}
                       </>
@@ -327,12 +369,12 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Ruler size={14} color="#60a5fa" />
                         <span style={{ color: '#9ca3af' }}>Height</span>
-                        <span style={{ color: 'white', fontWeight: 'bold', marginLeft: 'auto' }}>{userData.height} {userData.unit === 'metric' ? 'cm' : 'in'}</span>
+                        <span style={{ color: 'white', fontWeight: 'bold', marginLeft: 'auto' }}>{displayHeight} {heightUnit}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Weight size={14} color="#4ade80" />
                         <span style={{ color: '#9ca3af' }}>Weight</span>
-                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto' }}>0G</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Weightless</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Activity size={14} color="#4ade80" />
@@ -421,7 +463,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         ))}
                       </div>
                       <div style={{ position: 'absolute', right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', color: '#60a5fa', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                        {userData.height} {userData.unit === 'metric' ? 'cm' : 'in'}
+                        {displayHeight} {heightUnit}
                       </div>
                     </div>
 
@@ -443,7 +485,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         border: '1px solid rgba(255,255,255,0.1)',
                       }} />
                       <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 'bold', marginTop: '4px' }}>
-                        {currentWeight} {userData.unit === 'metric' ? 'kg' : 'lbs'}
+                        {displayWeight} {weightUnit}
                       </span>
                     </div>
 
