@@ -325,9 +325,20 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                           <p style={{ margin: 0 }}><strong>Year Length:</strong> {PLANETS[selectedDestination].yearLengthMultiplier === 1.0 && selectedDestination !== 'earth' ? 'N/A' : `${PLANETS[selectedDestination].yearLengthMultiplier} Earth Yrs`}</p>
                         </div>
                         {selectedDestination === currentPlanetId ? (
-                          <div style={{ padding: '16px', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '8px', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.5)' }}>
-                            CURRENT LOCATION
-                          </div>
+                          <button 
+                            onClick={() => setTravelState('descending')}
+                            style={{ 
+                              padding: '16px', background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80', 
+                              border: '1px solid rgba(74, 222, 128, 0.5)', borderRadius: '8px', 
+                              fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(74, 222, 128, 0.3)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(74, 222, 128, 0.2)'}
+                          >
+                            DESCEND TO SURFACE <Navigation size={20} style={{ transform: 'rotate(180deg)' }} />
+                          </button>
                         ) : (
                           <button 
                             onClick={handleNavigate}
@@ -374,7 +385,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Weight size={14} color="#4ade80" />
                         <span style={{ color: '#9ca3af' }}>Weight</span>
-                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Weightless</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Weightless ({displayWeight} {weightUnit})</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Activity size={14} color="#4ade80" />
@@ -413,14 +424,35 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                       {planet.gravityMultiplier}G
                     </div>
 
-                    {/* Person Avatar — floats higher in low gravity */}
+                    {/* Height Ruler — right side of person */}
                     <div style={{
-                      position: 'relative',
-                      bottom: `${Math.max(3, (1 - planet.gravityMultiplier) * 40)}px`,
+                      position: 'absolute',
+                      right: '50px',
+                      bottom: '3px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
+                    }}>
+                      <div style={{ position: 'relative', width: '16px', height: '150px', borderLeft: '2px solid #60a5fa', borderTop: '2px solid #60a5fa', borderBottom: '2px solid #60a5fa' }}>
+                        {/* Ruler ticks */}
+                        {[0, 1, 2, 3, 4].map(i => (
+                          <div key={i} style={{ position: 'absolute', top: `${i * 25}%`, left: 0, width: '8px', height: '1px', background: '#60a5fa' }} />
+                        ))}
+                      </div>
+                      <div style={{ position: 'absolute', right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', color: '#60a5fa', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        {displayHeight} {heightUnit}
+                      </div>
+                    </div>
+
+                    {/* Person Avatar & Scale Group */}
+                    <div style={{
+                      position: 'relative',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      bottom: `${Math.max(10, (1 - planet.gravityMultiplier) * 60)}px`,
                       transition: 'bottom 1s ease',
+                      zIndex: 10
                     }}>
                       {/* Age Badge */}
                       <div style={{
@@ -446,49 +478,27 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         <div style={{ width: '10px', height: '40px', background: 'linear-gradient(180deg, #1e3a5f, #0f172a)', borderRadius: '3px' }} />
                         <div style={{ width: '10px', height: '40px', background: 'linear-gradient(180deg, #1e3a5f, #0f172a)', borderRadius: '3px' }} />
                       </div>
-                    </div>
 
-                    {/* Height Ruler — right side of person */}
-                    <div style={{
-                      position: 'absolute',
-                      right: '50px',
-                      bottom: '3px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                    }}>
-                      <div style={{ position: 'relative', width: '16px', height: '150px', borderLeft: '2px solid #60a5fa', borderTop: '2px solid #60a5fa', borderBottom: '2px solid #60a5fa' }}>
-                        {/* Ruler ticks */}
-                        {[0, 1, 2, 3, 4].map(i => (
-                          <div key={i} style={{ position: 'absolute', top: `${i * 25}%`, left: 0, width: '8px', height: '1px', background: '#60a5fa' }} />
-                        ))}
-                      </div>
-                      <div style={{ position: 'absolute', right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', color: '#60a5fa', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                        {displayHeight} {heightUnit}
-                      </div>
-                    </div>
-
-                    {/* Weight Scale — under the person */}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '12px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}>
+                      {/* Weight Scale — attached to feet */}
                       <div style={{
-                        width: '70px',
-                        height: '10px',
-                        background: 'linear-gradient(90deg, #334155, #475569)',
-                        borderRadius: '4px',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                      }} />
-                      <span style={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}>
-                        {displayWeight} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{weightUnit}</span>
-                      </span>
+                        marginTop: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <div style={{
+                          width: '80px',
+                          height: '10px',
+                          background: 'linear-gradient(90deg, #334155, #475569)',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
+                        }} />
+                        <span style={{ color: 'white', fontSize: '1.1rem', fontWeight: 'bold', textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>
+                          {displayWeight} <span style={{ color: '#9ca3af', fontSize: '0.8rem', fontWeight: 'normal' }}>{weightUnit}</span>
+                        </span>
+                      </div>
                     </div>
 
                   </div>
