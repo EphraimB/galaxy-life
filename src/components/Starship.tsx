@@ -316,6 +316,30 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         Select a planet from the orbital map
                       </div>
                     )}
+
+                    {/* Compact Biometrics in orbit */}
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <User size={14} color="#60a5fa" />
+                        <span style={{ color: '#9ca3af' }}>Age</span>
+                        <span style={{ color: '#c4b5fd', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Ageless ∞</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Ruler size={14} color="#60a5fa" />
+                        <span style={{ color: '#9ca3af' }}>Height</span>
+                        <span style={{ color: 'white', fontWeight: 'bold', marginLeft: 'auto' }}>{userData.height} {userData.unit === 'metric' ? 'cm' : 'in'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Weight size={14} color="#4ade80" />
+                        <span style={{ color: '#9ca3af' }}>Weight</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto' }}>0G</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Activity size={14} color="#4ade80" />
+                        <span style={{ color: '#9ca3af' }}>Gravity</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto' }}>Micro</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
