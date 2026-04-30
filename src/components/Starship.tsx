@@ -321,38 +321,108 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
               ) : (
                 <div style={{ flex: 1, display: 'flex', gap: '32px', background: 'rgba(0,0,0,0.2)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   
-                  {/* Left Column: Biometrics & Gauges */}
-                  <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '24px', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '32px' }}>
+                  {/* Left Column: Visual Infographic */}
+                  <div style={{ flex: 1.5, position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '24px' }}>
                     
-                    {/* Holographic Biometrics */}
-                    <div>
-                      <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '16px' }}>BIOMETRICS HUD</p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
-                          <User color="#60a5fa" size={32} style={{ flexShrink: 0 }} />
-                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                            <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Age</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateAge(userData.birthdate, planet.yearLengthMultiplier)} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{planet.name} Yrs</span></span>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%)', padding: '12px', borderRadius: '8px', borderLeft: '2px solid #3b82f6' }}>
-                          <Ruler color="#60a5fa" size={32} style={{ flexShrink: 0 }} />
-                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                            <span style={{ fontSize: '0.9rem', color: '#9ca3af', textTransform: 'uppercase' }}>Height</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userData.height} <span style={{fontSize: '1rem', color: '#60a5fa'}}>{userData.unit === 'metric' ? 'cm' : 'in'}</span></span>
-                          </div>
-                        </div>
+                    {/* Ground / Floor */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: '24px', height: '3px', background: `linear-gradient(90deg, transparent 0%, ${planet.padColor}66 50%, transparent 100%)` }} />
+
+                    {/* Gravity Arrows — more arrows = stronger gravity */}
+                    {Array.from({ length: Math.max(1, Math.round(planet.gravityMultiplier * 3)) }).map((_, i) => (
+                      <div key={i} style={{
+                        position: 'absolute',
+                        left: `${20 + i * 28}px`,
+                        bottom: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        opacity: 0.3 + (i * 0.15),
+                      }}>
+                        <div style={{ width: '2px', height: `${16 + i * 4}px`, background: '#f59e0b' }} />
+                        <div style={{ width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '8px solid #f59e0b' }} />
+                      </div>
+                    ))}
+                    <div style={{ position: 'absolute', left: '12px', bottom: `${38 + Math.round(planet.gravityMultiplier * 3) * 4}px`, color: '#f59e0b', fontSize: '0.8rem', letterSpacing: '1px', fontWeight: 'bold' }}>
+                      {planet.gravityMultiplier}G
+                    </div>
+
+                    {/* Person Avatar — floats higher in low gravity */}
+                    <div style={{
+                      position: 'relative',
+                      bottom: `${Math.max(3, (1 - planet.gravityMultiplier) * 40)}px`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      transition: 'bottom 1s ease',
+                    }}>
+                      {/* Age Badge */}
+                      <div style={{
+                        background: 'rgba(139, 92, 246, 0.25)',
+                        border: '1px solid rgba(139, 92, 246, 0.5)',
+                        borderRadius: '20px',
+                        padding: '3px 14px',
+                        marginBottom: '8px',
+                        fontSize: '0.9rem',
+                        color: '#c4b5fd',
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {calculateAge(userData.birthdate, planet.yearLengthMultiplier)} {planet.name} yrs
+                      </div>
+                      
+                      {/* Head */}
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', border: '2px solid rgba(255,255,255,0.3)' }} />
+                      {/* Body */}
+                      <div style={{ width: '28px', height: '50px', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', borderRadius: '6px 6px 4px 4px', marginTop: '-2px' }} />
+                      {/* Legs */}
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '-1px' }}>
+                        <div style={{ width: '10px', height: '40px', background: 'linear-gradient(180deg, #1e3a5f, #0f172a)', borderRadius: '3px' }} />
+                        <div style={{ width: '10px', height: '40px', background: 'linear-gradient(180deg, #1e3a5f, #0f172a)', borderRadius: '3px' }} />
                       </div>
                     </div>
 
-                    {/* Circular Environment Gauges */}
-                    <div style={{ flex: 1 }}>
-                      <p style={{ color: '#9ca3af', margin: 0, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '16px' }}>ENVIRONMENTAL READINGS</p>
-                      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '120px' }}>
-                        <CircularGauge label="GRAVITY" value={planet.gravityMultiplier} max={3} unit="G" color="#4ade80" />
-                        <CircularGauge label="WEIGHT" value={currentWeight} max={userData?.weight! * 3} unit={userData.unit === 'metric' ? 'kg' : 'lbs'} color="#f59e0b" />
+                    {/* Height Ruler — right side of person */}
+                    <div style={{
+                      position: 'absolute',
+                      right: '50px',
+                      bottom: '3px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}>
+                      <div style={{ position: 'relative', width: '16px', height: '150px', borderLeft: '2px solid #60a5fa', borderTop: '2px solid #60a5fa', borderBottom: '2px solid #60a5fa' }}>
+                        {/* Ruler ticks */}
+                        {[0, 1, 2, 3, 4].map(i => (
+                          <div key={i} style={{ position: 'absolute', top: `${i * 25}%`, left: 0, width: '8px', height: '1px', background: '#60a5fa' }} />
+                        ))}
+                      </div>
+                      <div style={{ position: 'absolute', right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', color: '#60a5fa', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        {userData.height} {userData.unit === 'metric' ? 'cm' : 'in'}
                       </div>
                     </div>
+
+                    {/* Weight Scale — under the person */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '-4px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}>
+                      <div style={{
+                        width: '60px',
+                        height: '8px',
+                        background: 'linear-gradient(90deg, #334155, #475569)',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }} />
+                      <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 'bold', marginTop: '4px' }}>
+                        {currentWeight} {userData.unit === 'metric' ? 'kg' : 'lbs'}
+                      </span>
+                    </div>
+
                   </div>
 
                   {/* Right Column: Vertical Flight Map */}
