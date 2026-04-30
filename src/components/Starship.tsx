@@ -408,7 +408,8 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                         <div style={{ width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '8px solid #f59e0b' }} />
                       </div>
                     ))}
-                    <div style={{ position: 'absolute', left: '12px', bottom: `${38 + Math.round(planet.gravityMultiplier * 3) * 4}px`, color: '#f59e0b', fontSize: '0.8rem', letterSpacing: '1px', fontWeight: 'bold' }}>
+                    <div style={{ position: 'absolute', left: '12px', bottom: `${38 + Math.round(planet.gravityMultiplier * 3) * 4}px`, color: '#f59e0b', fontSize: '0.75rem', letterSpacing: '1px', fontWeight: 'bold', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.6rem', color: '#9ca3af' }}>GRAV</span>
                       {planet.gravityMultiplier}G
                     </div>
 
@@ -470,22 +471,23 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                     {/* Weight Scale — under the person */}
                     <div style={{
                       position: 'absolute',
-                      bottom: '-4px',
+                      bottom: '12px',
                       left: '50%',
                       transform: 'translateX(-50%)',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
+                      gap: '4px',
                     }}>
                       <div style={{
-                        width: '60px',
-                        height: '8px',
+                        width: '70px',
+                        height: '10px',
                         background: 'linear-gradient(90deg, #334155, #475569)',
                         borderRadius: '4px',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.15)',
                       }} />
-                      <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 'bold', marginTop: '4px' }}>
-                        {displayWeight} {weightUnit}
+                      <span style={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}>
+                        {displayWeight} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{weightUnit}</span>
                       </span>
                     </div>
 
