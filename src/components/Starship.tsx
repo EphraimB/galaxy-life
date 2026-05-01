@@ -12,11 +12,12 @@ interface Props {
   userData: UserData | null;
   onAltitudeChange: (altitude: number) => void;
   onPlanetChange: (planet: string) => void;
+  facePos?: { x: number; y: number };
 }
 
 type TravelState = 'landed' | 'pre-launch' | 'ascending' | 'orbiting' | 'warping' | 'descending';
 
-export default function Starship({ active, userData, onAltitudeChange, onPlanetChange }: Props) {
+export default function Starship({ active, userData, onAltitudeChange, onPlanetChange, facePos }: Props) {
   const shipRef = useRef<THREE.Group>(null);
   const [travelState, setTravelState] = useState<TravelState>('landed');
   const [countdown, setCountdown] = useState(3);
@@ -102,11 +103,13 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
       shipRef.current.position.z = 0;
     }
 
-    // Parallax effect: let the user look around the cockpit slightly using the global mouse
+    // Parallax: prefer face tracking when available, fall back to mouse
     if (active) {
       const { camera } = state;
-      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, -mouse.current.x * 0.3, 0.05);
-      camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, mouse.current.y * 0.3, 0.05);
+      const lookX = facePos ? facePos.x : -mouse.current.x;
+      const lookY = facePos ? -facePos.y : mouse.current.y;
+      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, lookX * 0.3, 0.05);
+      camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, lookY * 0.3, 0.05);
     }
   });
 
@@ -385,7 +388,7 @@ export default function Starship({ active, userData, onAltitudeChange, onPlanetC
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Weight size={14} color="#4ade80" />
                         <span style={{ color: '#9ca3af' }}>Weight</span>
-                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Weightless ({displayWeight} {weightUnit})</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold', marginLeft: 'auto', fontStyle: 'italic' }}>Weightless</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Activity size={14} color="#4ade80" />

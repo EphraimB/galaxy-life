@@ -8,6 +8,7 @@ import * as THREE from 'three';
 
 interface Props {
   userData: UserData | null;
+  facePos?: { x: number; y: number };
 }
 
 // Custom Sky/Atmosphere that fades based on altitude
@@ -76,7 +77,7 @@ function PlanetEnvironment({ active, planet }: { active: boolean, planet: Planet
   );
 }
 
-export default function GraphicalEnvironment({ userData }: Props) {
+export default function GraphicalEnvironment({ userData, facePos }: Props) {
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
   
@@ -92,6 +93,7 @@ export default function GraphicalEnvironment({ userData }: Props) {
           userData={userData} 
           onAltitudeChange={setAltitude} 
           onPlanetChange={setCurrentPlanetId}
+          facePos={facePos}
         />
       </Suspense>
     </Canvas>
