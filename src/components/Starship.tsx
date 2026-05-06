@@ -23,7 +23,7 @@ export default function Starship(props: any) {
         Eye level at 1.4 units. 
         Reduced FOV to 50 for a cinematic, 50mm lens feel (avoids fisheye/gamey look).
       */}
-      <PerspectiveCamera makeDefault position={[0, 1.4, 0]} fov={50} near={0.1} far={1000} />
+      <PerspectiveCamera makeDefault position={[0, 1.6, 1.2]} rotation={[-0.1, 0, 0]} fov={50} near={0.1} far={1000} />
 
       <group name="cockpit-interior">
         {/* ----- 4. Lighting Realism ----- */}

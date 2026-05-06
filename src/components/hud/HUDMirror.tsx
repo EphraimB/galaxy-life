@@ -63,7 +63,7 @@ export default function HUDMirror({ facePos, handState }: Props) {
   });
 
   return (
-    <group position={[-2.2, 1.4, -1.0]} rotation={[0, Math.PI / 6, 0]}>
+    <group position={[-1.2, 1.5, -1.2]} rotation={[0, Math.PI / 6, 0]}>
       {/* Glass panel backing for the mirror */}
       <mesh position={[0, 0, -0.05]}>
         <planeGeometry args={[1.5, 2]} />

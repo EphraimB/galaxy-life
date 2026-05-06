@@ -77,7 +77,7 @@ export default function PlanetHoloMap({ gesture, onSelectPlanet }: Props) {
   });
 
   return (
-    <group ref={groupRef} position={[0, 0.9, -1.2]} rotation={[-Math.PI / 8, 0, 0]}>
+    <group ref={groupRef} position={[0, 1.4, -1.3]} rotation={[-Math.PI / 4, 0, 0]}>
       {/* Base holographic projector plate */}
       <mesh position={[0, -0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.9, 1.0, 32]} />
@@ -95,8 +95,8 @@ export default function PlanetHoloMap({ gesture, onSelectPlanet }: Props) {
         return (
           <group key={p.id} position={[p.posX, 0, 0]}>
             <mesh scale={scale}>
-              <sphereGeometry args={[0.15, 16, 16]} />
-              <meshBasicMaterial color={p.color} transparent opacity={opacity} wireframe />
+              <sphereGeometry args={[0.15, 32, 32]} />
+              <meshStandardMaterial color={p.color} transparent opacity={opacity === 0.4 ? 0.7 : opacity} />
             </mesh>
             
             {/* Selection ring */}
