@@ -1,4 +1,5 @@
 import { Canvas } from '@react-three/fiber';
+import { Environment } from '@react-three/drei';
 import { Suspense, useState } from 'react';
 import { UserData } from './OnboardingForm';
 import Starship from './Starship';
@@ -20,6 +21,9 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
   return (
     <Canvas shadows>
       <Suspense fallback={null}>
+        {/* Environment map to provide reflections for high-metalness materials */}
+        <Environment preset="city" />
+        
         {/* World Manager handles the dynamic external environment layers and transitions */}
         <WorldManager currentWorldId={currentPlanetId} altitude={altitude} />
         

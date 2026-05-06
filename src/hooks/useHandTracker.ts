@@ -94,7 +94,10 @@ export function useHandTracker({ videoEl, enabled }: UseHandTrackerOptions): Han
     }
 
     if (!result.landmarks || result.landmarks.length === 0) {
-      setState(prev => ({ ...prev, fingerPos: null, isPinching: false, swipe: null, isTracking: false, hands: [] }));
+      setState(prev => {
+        if (!prev.isTracking && !prev.fingerPos && prev.hands?.length === 0) return prev;
+        return { ...prev, fingerPos: null, isPinching: false, swipe: null, isTracking: false, hands: [] };
+      });
       swipeStart.current = null;
       animFrameRef.current = requestAnimationFrame(detect);
       return;

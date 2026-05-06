@@ -17,6 +17,8 @@ const PLANETS = [
 export default function PlanetHoloMap({ gesture, onSelectPlanet }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [lockedId, setLockedId] = useState<string | null>(null);
+  const hoveredIdRef = useRef<string | null>(null);
+  const lockedIdRef = useRef<string | null>(null);
   const groupRef = useRef<THREE.Group>(null);
   
   // Previous gesture type to detect release
@@ -45,23 +47,29 @@ export default function PlanetHoloMap({ gesture, onSelectPlanet }: Props) {
       }
     }
 
-    setHoveredId(closestId);
+    if (hoveredIdRef.current !== closestId) {
+      hoveredIdRef.current = closestId;
+      setHoveredId(closestId);
+    }
 
     // Handle gesture state transitions
-    if (gesture.type === 'pinch' && closestId && !lockedId) {
+    if (gesture.type === 'pinch' && closestId && !lockedIdRef.current) {
+      lockedIdRef.current = closestId;
       setLockedId(closestId);
     }
     
     // Release trigger
     if (prevGestureRef.current !== 'idle' && gesture.type === 'idle') {
-      if (lockedId) {
-        onSelectPlanet(lockedId);
+      if (lockedIdRef.current) {
+        onSelectPlanet(lockedIdRef.current);
+        lockedIdRef.current = null;
         setLockedId(null);
       }
     }
 
-    if (gesture.type === 'idle' && lockedId) {
+    if (gesture.type === 'idle' && lockedIdRef.current) {
       // Cancel lock if moved away and released
+      lockedIdRef.current = null;
       setLockedId(null);
     }
 
