@@ -8,9 +8,11 @@ import { useGestureInteraction } from '@/lib/gestureInteraction';
 
 interface Props {
   onFacePos: (pos: { x: number; y: number }) => void;
+  onHandState?: (state: HandState) => void;
+  onFaceTracking?: (isTracking: boolean) => void;
 }
 
-export default function WebcamOverlay({ onFacePos }: Props) {
+export default function WebcamOverlay({ onFacePos, onHandState, onFaceTracking }: Props) {
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [handEnabled, setHandEnabled] = useState(false);
   const [faceEnabled, setFaceEnabled] = useState(false);
@@ -20,10 +22,11 @@ export default function WebcamOverlay({ onFacePos }: Props) {
 
   const { videoEl, isReady, error } = useWebcam(webcamEnabled);
 
-  const { fingerPos, isPinching, swipe, isTracking: handTracking } = useHandTracker({
+  const handState = useHandTracker({
     videoEl: isReady ? videoEl : null,
     enabled: handEnabled && webcamEnabled,
   });
+  const { fingerPos, isPinching, swipe, isTracking: handTracking } = handState;
 
   const { facePos, isTracking: faceTracking } = useFaceTracker({
     videoEl: isReady ? videoEl : null,
@@ -35,7 +38,17 @@ export default function WebcamOverlay({ onFacePos }: Props) {
     if (faceTracking) {
       onFacePos(facePos);
     }
-  }, [facePos, faceTracking, onFacePos]);
+    if (onFaceTracking) {
+      onFaceTracking(faceTracking);
+    }
+  }, [facePos, faceTracking, onFacePos, onFaceTracking]);
+
+  // Forward hand state to parent
+  useEffect(() => {
+    if (onHandState) {
+      onHandState(handState);
+    }
+  }, [handState, onHandState]);
 
   // Wire gesture interaction (synthetic clicks on pinch)
   useGestureInteraction({ fingerPos, isPinching, enabled: handEnabled && webcamEnabled });

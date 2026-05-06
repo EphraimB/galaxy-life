@@ -12,6 +12,7 @@ export interface HandState {
   isPinching: boolean;
   swipe: 'left' | 'right' | 'up' | 'down' | null;
   isTracking: boolean;
+  hands?: { fingerPos: { x: number; y: number }; isPinching: boolean }[];
 }
 
 interface UseHandTrackerOptions {
@@ -45,6 +46,7 @@ export function useHandTracker({ videoEl, enabled }: UseHandTrackerOptions): Han
     isPinching: false,
     swipe: null,
     isTracking: false,
+    hands: [],
   });
 
   // Load the model once
@@ -57,7 +59,7 @@ export function useHandTracker({ videoEl, enabled }: UseHandTrackerOptions): Han
       const landmarker = await HandLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetPath: MODEL_PATH, delegate: 'GPU' },
         runningMode: 'VIDEO',
-        numHands: 1,
+        numHands: 2,
         minHandDetectionConfidence: CONFIDENCE_THRESHOLD,
         minHandPresenceConfidence: CONFIDENCE_THRESHOLD,
         minTrackingConfidence: CONFIDENCE_THRESHOLD,
@@ -92,32 +94,36 @@ export function useHandTracker({ videoEl, enabled }: UseHandTrackerOptions): Han
     }
 
     if (!result.landmarks || result.landmarks.length === 0) {
-      setState(prev => ({ ...prev, fingerPos: null, isPinching: false, swipe: null, isTracking: false }));
+      setState(prev => ({ ...prev, fingerPos: null, isPinching: false, swipe: null, isTracking: false, hands: [] }));
       swipeStart.current = null;
       animFrameRef.current = requestAnimationFrame(detect);
       return;
     }
 
-    const landmarks = result.landmarks[0];
-    // Index finger tip = landmark 8, thumb tip = landmark 4
-    const indexTip = landmarks[8];
-    const thumbTip = landmarks[4];
+    const newHands = result.landmarks.map(landmarks => {
+      const indexTip = landmarks[8];
+      const thumbTip = landmarks[4];
+      const dx = indexTip.x - thumbTip.x;
+      const dy = indexTip.y - thumbTip.y;
+      const dz = indexTip.z - thumbTip.z;
+      const pinchDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      return {
+        fingerPos: { x: indexTip.x, y: indexTip.y },
+        isPinching: pinchDist < PINCH_THRESHOLD
+      };
+    });
 
-    // Smooth the position
-    smoothedPos.current.x = lerp(smoothedPos.current.x, indexTip.x, LERP_ALPHA);
-    smoothedPos.current.y = lerp(smoothedPos.current.y, indexTip.y, LERP_ALPHA);
+    const primaryHand = newHands[0];
+
+    // Smooth the primary position
+    smoothedPos.current.x = lerp(smoothedPos.current.x, primaryHand.fingerPos.x, LERP_ALPHA);
+    smoothedPos.current.y = lerp(smoothedPos.current.y, primaryHand.fingerPos.y, LERP_ALPHA);
 
     const screenX = smoothedPos.current.x; // 0=left, 1=right (mirrored by camera)
     const screenY = smoothedPos.current.y; // 0=top, 1=bottom
+    const isPinching = primaryHand.isPinching;
 
-    // Pinch detection
-    const dx = indexTip.x - thumbTip.x;
-    const dy = indexTip.y - thumbTip.y;
-    const dz = indexTip.z - thumbTip.z;
-    const pinchDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const isPinching = pinchDist < PINCH_THRESHOLD;
-
-    // Swipe detection
+    // Swipe detection (only for primary hand)
     let swipe: HandState['swipe'] = null;
     if (!isPinching) {
       if (!swipeStart.current) {
@@ -147,6 +153,7 @@ export function useHandTracker({ videoEl, enabled }: UseHandTrackerOptions): Han
       isPinching,
       swipe,
       isTracking: true,
+      hands: newHands,
     });
 
     animFrameRef.current = requestAnimationFrame(detect);

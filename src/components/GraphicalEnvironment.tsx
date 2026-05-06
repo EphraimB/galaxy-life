@@ -3,13 +3,17 @@ import { Suspense, useState } from 'react';
 import { UserData } from './OnboardingForm';
 import Starship from './Starship';
 import WorldManager from './worlds/WorldManager';
+import HUDManager from './hud/HUDManager';
+import { HandState } from '@/hooks/useHandTracker';
 
 interface Props {
   userData: UserData | null;
   facePos?: { x: number; y: number };
+  handState?: HandState | null;
+  isFaceTracking?: boolean;
 }
 
-export default function GraphicalEnvironment({ userData, facePos }: Props) {
+export default function GraphicalEnvironment({ userData, facePos, handState, isFaceTracking }: Props) {
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
 
@@ -27,6 +31,16 @@ export default function GraphicalEnvironment({ userData, facePos }: Props) {
           onPlanetChange={setCurrentPlanetId}
           facePos={facePos}
         />
+
+        {/* Adaptive Interaction System HUD Layer */}
+        {userData && handState && (
+          <HUDManager 
+            handState={handState} 
+            facePos={facePos} 
+            isFaceTracking={!!isFaceTracking} 
+            onSelectPlanet={setCurrentPlanetId}
+          />
+        )}
       </Suspense>
     </Canvas>
   );
