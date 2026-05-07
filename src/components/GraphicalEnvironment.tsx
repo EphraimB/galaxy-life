@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Environment, OrbitControls } from '@react-three/drei';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useRef } from 'react';
 import { UserData } from './OnboardingForm';
 import Starship from './Starship';
 import WorldManager from './worlds/WorldManager';
@@ -19,7 +19,7 @@ interface Props {
 import * as THREE from 'three';
 
 export default function GraphicalEnvironment({ userData, facePos, handState, isFaceTracking }: Props) {
-  const [altitude, setAltitude] = useState(0);
+  const altitudeRef = useRef(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
   const [flightState, setFlightState] = useState<FlightState>('landed');
 
@@ -27,50 +27,26 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
     <>
     <Canvas shadows={{ type: THREE.PCFShadowMap }}>
       <Suspense fallback={null}>
-        {/* Environment map to provide reflections for high-metalness materials */}
-        <Environment preset="city" />
+        {/* Removed Environment map to prevent it from blowing out the lighting or causing white skies */}
         
         {/* World Manager handles the dynamic external environment layers and transitions */}
-        <WorldManager currentWorldId={currentPlanetId} altitude={altitude} />
+        <WorldManager currentWorldId={currentPlanetId} altitudeRef={altitudeRef} />
         
         {/* Starship is the static first-person cockpit overlay */}
         <Starship 
           active={!!userData} 
           userData={userData} 
-          altitude={altitude}
-          onAltitudeChange={setAltitude} 
+          altitudeRef={altitudeRef}
           currentPlanetId={currentPlanetId}
           onPlanetChange={setCurrentPlanetId}
           flightState={flightState}
           onFlightStateChange={setFlightState}
           facePos={facePos}
+          handState={handState}
+          isFaceTracking={!!isFaceTracking}
         />
-
-        {/* Adaptive Interaction System HUD Layer (3D) */}
-        {userData && handState && (
-          <HUDManager3D 
-            handState={handState} 
-            facePos={facePos} 
-            isFaceTracking={!!isFaceTracking} 
-          />
-        )}
       </Suspense>
     </Canvas>
-    {/* 2D Overlay outside Canvas */}
-    {userData && handState && (
-      <HUDOverlay2D 
-        userData={userData}
-        onSelectPlanet={setCurrentPlanetId}
-        currentPlanetId={currentPlanetId}
-        flightState={flightState}
-        onLaunch={() => setFlightState('launching')}
-        onDescend={() => setFlightState('descending')}
-        onWarp={(planetId: string) => {
-          setCurrentPlanetId(planetId);
-          setFlightState('orbiting');
-        }}
-      />
-    )}
     </>
   );
 }

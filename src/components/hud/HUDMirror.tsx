@@ -65,14 +65,13 @@ export default function HUDMirror({ facePos, handState }: Props) {
   return (
     <group position={[-1.2, 1.5, -1.2]} rotation={[0, Math.PI / 6, 0]}>
       {/* Glass panel backing for the mirror */}
-      <mesh position={[0, 0, -0.05]}>
-        <planeGeometry args={[1.5, 2]} />
-        <meshPhysicalMaterial 
-          color="#0f172a" 
-          transparent 
-          opacity={0.4} 
-          roughness={0.1} 
-          metalness={0.8}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1.5, 2.0, 0.05]} />
+        <meshStandardMaterial 
+          transparent
+          opacity={0.3}
+          roughness={0.1}
+          color="#a78bfa"
         />
       </mesh>
       

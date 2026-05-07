@@ -5,9 +5,10 @@ import * as THREE from 'three';
 interface Props {
   targetWorldId: string;
   onTransitionMiddle: (worldId: string) => void;
+  altitudeRef: React.MutableRefObject<number>;
 }
 
-export default function TransitionController({ targetWorldId, onTransitionMiddle }: Props) {
+export default function TransitionController({ targetWorldId, onTransitionMiddle, altitudeRef }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null);
   
@@ -21,7 +22,10 @@ export default function TransitionController({ targetWorldId, onTransitionMiddle
   }, [targetWorldId, currentWorldId, phase]);
 
   useFrame((_, delta) => {
-    if (!materialRef.current) return;
+    if (!materialRef.current || !meshRef.current) return;
+    
+    // Always track altitude so the transition sphere stays with the camera
+    meshRef.current.position.y = altitudeRef.current;
 
     const speed = 2.0; // Fade speed
 

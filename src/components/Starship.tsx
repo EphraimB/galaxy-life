@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 
+import { HUDManager3D } from './hud/HUDManager';
+
 export default function Starship(props: any) {
   // 1. Spatial Realism: Cinematic, wide panoramic cockpit
   const windowRadius = 4.5;
@@ -19,13 +21,14 @@ export default function Starship(props: any) {
   const rightRotY = Math.PI + windowAngle;
 
   const cameraGroupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame(() => {
     if (!cameraGroupRef.current) return;
     
     // Parallax effect based on face position
     const targetCamRot = new THREE.Vector3(0, 0, 0);
-    const targetCamPos = new THREE.Vector3(0, 1.4, 1.5);
+    const targetCamPos = new THREE.Vector3(0, 1.4, 0.5); // Moved camera forward into the center seat
     
     if (props.facePos) {
       targetCamRot.y = props.facePos.x * 0.3; // Look left/right
@@ -42,31 +45,32 @@ export default function Starship(props: any) {
   });
 
   useFrame((state, delta) => {
-    // Altitude Simulation
+    if (!groupRef.current) return;
+    
+    // Altitude Simulation via Ref to avoid 60fps React state update choking
     if (props.flightState === 'launching') {
-      const newAlt = (props.altitude || 0) + delta * 300;
-      if (newAlt >= 500) {
-        if (props.onAltitudeChange) props.onAltitudeChange(500);
+      props.altitudeRef.current += delta * 1000;
+      if (props.altitudeRef.current >= 5000) {
+        props.altitudeRef.current = 5000;
         if (props.onFlightStateChange) props.onFlightStateChange('orbiting');
-      } else {
-        if (props.onAltitudeChange) props.onAltitudeChange(newAlt);
       }
     } else if (props.flightState === 'descending') {
-      const newAlt = (props.altitude || 0) - delta * 300;
-      if (newAlt <= 0) {
-        if (props.onAltitudeChange) props.onAltitudeChange(0);
+      props.altitudeRef.current -= delta * 1000;
+      if (props.altitudeRef.current <= 0) {
+        props.altitudeRef.current = 0;
         if (props.onFlightStateChange) props.onFlightStateChange('landed');
-      } else {
-        if (props.onAltitudeChange) props.onAltitudeChange(newAlt);
       }
     }
+    
+    // Bind the physical Y position to the altitude
+    groupRef.current.position.y = 0.4 + props.altitudeRef.current;
   });
 
   return (
-    <group position={[0, 0, 0]}>
-      {/* Eye level at 1.4 units. Camera pulled back to z=1.5 to see the pilot seats. Cinematic wide lens. */}
-      <group ref={cameraGroupRef} position={[0, 1.4, 1.5]}>
-        <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={60} near={0.5} far={50000} />
+    <group ref={groupRef} position={[0, 0.4, 0]}> {/* Raised by 0.4 so the floor clears the terrain at y=0 */}
+      {/* Eye level at 1.4 units. Camera pushed forward to z=0.5 to sit in the pilot seat. */}
+      <group ref={cameraGroupRef} position={[0, 1.4, 0.5]}>
+        <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={60} near={0.5} far={25000} />
       </group>
 
       {/* Fallback mouse navigation for users without webcam enabled */}
@@ -92,118 +96,104 @@ export default function Starship(props: any) {
         {/* Subtle Console glow highlights */}
         <rectAreaLight width={6.0} height={0.5} color="#38bdf8" intensity={5.0} position={[0, 0.7, -1.5]} rotation={[-Math.PI / 2, 0, 0]} />
 
-        {/* Strong directional light from outside */}
-        <directionalLight position={[-15, 8, -20]} intensity={4.0} color="#ffffff" castShadow shadow-bias={-0.0001} />
+        {/* Directional light from outside (Sunlight through window) */}
+        <directionalLight position={[-15, 8, -20]} intensity={1.5} color="#ffffff" castShadow shadow-bias={-0.0001} />
 
         {/* ----- Architecture & Console Frame ----- */}
         {/* We remove the giant boxy floor/ceiling and replace with a sleek curved dashboard sill */}
         
         {/* Sleek, wide, low-profile curved dashboard */}
-        <mesh position={[0, 0.3, -2.2]} rotation={[0, 0, 0]} receiveShadow castShadow>
+        <mesh position={[0, 0.3, -2.2]} rotation={[0, 0, 0]}>
           <cylinderGeometry args={[4.0, 4.2, 0.8, 64, 1, false, Math.PI - 1.2, 2.4]} />
-          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+          <meshStandardMaterial color="#0f172a" metalness={0.3} roughness={0.8} />
         </mesh>
 
         {/* Console upper rim highlight */}
-        <mesh position={[0, 0.72, -2.18]} receiveShadow>
+        <mesh position={[0, 0.72, -2.18]}>
           <cylinderGeometry args={[3.95, 4.0, 0.05, 64, 1, false, Math.PI - 1.2, 2.4]} />
-          <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.1} />
+          <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
         </mesh>
 
-        {/* ----- Pilot Seats & Foreground Elements ----- */}
-        {/* Left Seat Frame */}
-        <group position={[-1.0, 0, 0.2]}>
-          <mesh position={[0, 0.3, 0]} receiveShadow castShadow>
+        {/* ----- Pilot Seat & Foreground Elements ----- */}
+        {/* Single Center Seat - pushed back so the camera doesn't clip into it */}
+        <group position={[0, 0, 1.2]}>
+          <mesh position={[0, 0.3, 0]}>
             <boxGeometry args={[0.9, 0.6, 1.0]} />
             <meshStandardMaterial color="#0f172a" roughness={0.9} />
           </mesh>
-          <mesh position={[0, 0.8, 0.3]} rotation={[-0.15, 0, 0]} receiveShadow castShadow>
+          <mesh position={[0, 0.8, 0.4]} rotation={[-0.15, 0, 0]}>
             <boxGeometry args={[0.8, 1.2, 0.2]} />
             <meshStandardMaterial color="#1e293b" roughness={0.8} />
           </mesh>
-          {/* Left Joystick Base */}
-          <mesh position={[0, 0.7, -0.6]} receiveShadow castShadow>
-            <boxGeometry args={[0.3, 0.4, 0.5]} />
-            <meshStandardMaterial color="#334155" metalness={0.6} roughness={0.4} />
-          </mesh>
         </group>
-
-        {/* Right Seat Frame */}
-        <group position={[1.0, 0, 0.2]}>
-          <mesh position={[0, 0.3, 0]} receiveShadow castShadow>
-            <boxGeometry args={[0.9, 0.6, 1.0]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.9} />
-          </mesh>
-          <mesh position={[0, 0.8, 0.3]} rotation={[-0.15, 0, 0]} receiveShadow castShadow>
-            <boxGeometry args={[0.8, 1.2, 0.2]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.8} />
-          </mesh>
-          {/* Right Joystick Base */}
-          <mesh position={[0, 0.7, -0.6]} receiveShadow castShadow>
-            <boxGeometry args={[0.3, 0.4, 0.5]} />
-            <meshStandardMaterial color="#334155" metalness={0.6} roughness={0.4} />
-          </mesh>
-        </group>
-
-        {/* Camera is at [0, 1.4, 0] so it sits perfectly between the two seats! */}
+        
+        {/* Main Center Console / Joystick Base */}
+        <mesh position={[0, 0.7, -0.6]}>
+          <boxGeometry args={[0.6, 0.4, 0.5]} />
+          <meshStandardMaterial color="#334155" metalness={0.6} roughness={0.4} />
+        </mesh>
 
         {/* ----- 3. Window Realism ----- */}
         {/* Top Arch Frame */}
-        <mesh position={[0, 2.5, windowCenterZ]} receiveShadow castShadow>
+        <mesh position={[0, 2.5, windowCenterZ]}>
           <cylinderGeometry args={[windowRadius + 0.1, windowRadius + 0.1, 0.3, 64, 1, true, Math.PI - windowAngle - 0.05, windowAngle * 2 + 0.1]} />
           <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.3} side={THREE.DoubleSide} />
         </mesh>
 
         {/* Bottom Arch Frame */}
-        <mesh position={[0, 0.6, windowCenterZ]} receiveShadow castShadow>
+        <mesh position={[0, 0.6, windowCenterZ]}>
           <cylinderGeometry args={[windowRadius + 0.1, windowRadius + 0.1, 0.3, 64, 1, true, Math.PI - windowAngle - 0.05, windowAngle * 2 + 0.1]} />
           <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.3} side={THREE.DoubleSide} />
         </mesh>
 
         {/* Vertical Struts - Pushed out wide to match panoramic view */}
-        <mesh position={[leftX, 1.55, leftZ]} rotation={[0, leftRotY, 0]} receiveShadow castShadow>
+        <mesh position={[leftX, 1.55, leftZ]} rotation={[0, leftRotY, 0]}>
           <boxGeometry args={[0.3, 2.0, 0.3]} />
           <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.3} />
         </mesh>
-        <mesh position={[rightX, 1.55, rightZ]} rotation={[0, rightRotY, 0]} receiveShadow castShadow>
+        <mesh position={[rightX, 1.55, rightZ]} rotation={[0, rightRotY, 0]}>
           <boxGeometry args={[0.3, 2.0, 0.3]} />
           <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.3} />
         </mesh>
 
-        {/* Outer Glass Layer */}
-        <mesh position={[0, 1.55, windowCenterZ]}>
-          <cylinderGeometry args={[windowRadius, windowRadius, 1.8, 64, 1, true, Math.PI - windowAngle, windowAngle * 2]} />
-          <meshPhysicalMaterial
-            color="#ffffff"
-            transmission={0.9}
-            thickness={0.5}
-            roughness={0.1}
-            metalness={0.1}
-            transparent={true}
-            opacity={1}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+        {/* Outer Glass Layer removed to prevent massive specular glare */}
 
         {/* ----- 5. Cockpit Enclosure (Back walls, Floor, Ceiling) ----- */}
         {/* Rear Hull Wall */}
-        <mesh position={[0, 1.55, windowCenterZ]} receiveShadow castShadow>
+        <mesh position={[0, 1.55, windowCenterZ]}>
            <cylinderGeometry args={[windowRadius, windowRadius, 3.8, 64, 1, false, Math.PI + windowAngle, Math.PI * 2 - windowAngle * 2]} />
            <meshStandardMaterial color="#0f172a" side={THREE.DoubleSide} metalness={0.8} roughness={0.4} />
         </mesh>
         
         {/* Floor */}
-        <mesh position={[0, -0.35, windowCenterZ]} rotation={[-Math.PI/2, 0, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.35, windowCenterZ]} rotation={[-Math.PI/2, 0, 0]}>
            <circleGeometry args={[windowRadius, 64]} />
-           <meshStandardMaterial color="#0b1121" metalness={0.9} roughness={0.2} />
+           <meshStandardMaterial color="#0b1121" metalness={0.1} roughness={0.9} side={THREE.DoubleSide} />
         </mesh>
 
         {/* Ceiling */}
-        <mesh position={[0, 3.45, windowCenterZ]} rotation={[Math.PI/2, 0, 0]} receiveShadow castShadow>
+        <mesh position={[0, 3.45, windowCenterZ]} rotation={[Math.PI/2, 0, 0]}>
            <circleGeometry args={[windowRadius, 64]} />
-           <meshStandardMaterial color="#0b1121" metalness={0.9} roughness={0.2} />
+           <meshStandardMaterial color="#0b1121" metalness={0.9} roughness={0.2} side={THREE.DoubleSide} />
         </mesh>
 
+        {/* HUDManager inside the cockpit perfectly tracks the ship */}
+        {props.active && props.handState && (
+          <HUDManager3D 
+            handState={props.handState} 
+            facePos={props.facePos} 
+            isFaceTracking={props.isFaceTracking} 
+            userData={props.userData}
+            currentPlanetId={props.currentPlanetId}
+            flightState={props.flightState}
+            onLaunch={() => props.onFlightStateChange('launching')}
+            onDescend={() => props.onFlightStateChange('descending')}
+            onWarp={(planetId: string) => {
+              props.onPlanetChange(planetId);
+              props.onFlightStateChange('orbiting');
+            }}
+          />
+        )}
       </group>
     </group>
   );
