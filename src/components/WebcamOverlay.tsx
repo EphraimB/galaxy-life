@@ -34,9 +34,12 @@ export default function WebcamOverlay({ onFacePos, onHandState, onFaceTracking }
   });
 
   // Forward face position to parent (for camera parallax)
+  const lastFaceUpdate = useRef(0);
   useEffect(() => {
-    if (faceTracking) {
+    const now = performance.now();
+    if (faceTracking && now - lastFaceUpdate.current > 50) {
       onFacePos(facePos);
+      lastFaceUpdate.current = now;
     }
     if (onFaceTracking) {
       onFaceTracking(faceTracking);
@@ -44,9 +47,12 @@ export default function WebcamOverlay({ onFacePos, onHandState, onFaceTracking }
   }, [facePos, faceTracking, onFacePos, onFaceTracking]);
 
   // Forward hand state to parent
+  const lastHandUpdate = useRef(0);
   useEffect(() => {
-    if (onHandState) {
+    const now = performance.now();
+    if (onHandState && now - lastHandUpdate.current > 50) {
       onHandState(handState);
+      lastHandUpdate.current = now;
     }
   }, [handState, onHandState]);
 

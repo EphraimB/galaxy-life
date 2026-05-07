@@ -1,5 +1,7 @@
-import { PerspectiveCamera } from '@react-three/drei';
+import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 
 export default function Starship(props: any) {
   // 1. Spatial Realism: Cinematic, wide panoramic cockpit
@@ -16,10 +18,48 @@ export default function Starship(props: any) {
   const rightZ = windowCenterZ + Math.cos(Math.PI + windowAngle) * windowRadius;
   const rightRotY = Math.PI + windowAngle;
 
+  const cameraGroupRef = useRef<THREE.Group>(null);
+  
+  useFrame(() => {
+    if (!cameraGroupRef.current) return;
+    
+    // Parallax effect based on face position
+    const targetCamRot = new THREE.Vector3(0, 0, 0);
+    const targetCamPos = new THREE.Vector3(0, 1.4, 1.5);
+    
+    if (props.facePos) {
+      targetCamRot.y = props.facePos.x * 0.3; // Look left/right
+      targetCamRot.x = props.facePos.y * 0.3; // Look up/down
+      
+      targetCamPos.x = props.facePos.x * 0.2; // Lean left/right
+      targetCamPos.y = 1.4 + props.facePos.y * 0.2; // Lean up/down
+    }
+
+    cameraGroupRef.current.rotation.x = THREE.MathUtils.lerp(cameraGroupRef.current.rotation.x, targetCamRot.x, 0.1);
+    cameraGroupRef.current.rotation.y = THREE.MathUtils.lerp(cameraGroupRef.current.rotation.y, targetCamRot.y, 0.1);
+    cameraGroupRef.current.position.x = THREE.MathUtils.lerp(cameraGroupRef.current.position.x, targetCamPos.x, 0.1);
+    cameraGroupRef.current.position.y = THREE.MathUtils.lerp(cameraGroupRef.current.position.y, targetCamPos.y, 0.1);
+  });
+
   return (
     <group position={[0, 0, 0]}>
       {/* Eye level at 1.4 units. Camera pulled back to z=1.5 to see the pilot seats. Cinematic wide lens. */}
-      <PerspectiveCamera makeDefault position={[0, 1.4, 1.5]} fov={60} near={0.5} far={50000} />
+      <group ref={cameraGroupRef} position={[0, 1.4, 1.5]}>
+        <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={60} near={0.5} far={50000} />
+      </group>
+
+      {/* Fallback mouse navigation for users without webcam enabled */}
+      {!props.facePos && (
+        <OrbitControls 
+          target={[0, 1.4, 0]} 
+          minAzimuthAngle={-Math.PI / 3} 
+          maxAzimuthAngle={Math.PI / 3} 
+          minPolarAngle={Math.PI / 3} 
+          maxPolarAngle={Math.PI / 1.5} 
+          enableZoom={false} 
+          enablePan={false} 
+        />
+      )}
 
       <group name="cockpit-interior">
         {/* ----- 4. Lighting Realism ----- */}

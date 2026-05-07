@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
+import { Environment, OrbitControls } from '@react-three/drei';
 import { Suspense, useState } from 'react';
 import { UserData } from './OnboardingForm';
 import Starship from './Starship';
@@ -14,13 +14,15 @@ interface Props {
   isFaceTracking?: boolean;
 }
 
+import * as THREE from 'three';
+
 export default function GraphicalEnvironment({ userData, facePos, handState, isFaceTracking }: Props) {
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
 
   return (
     <>
-    <Canvas shadows>
+    <Canvas shadows={{ type: THREE.PCFShadowMap }}>
       <Suspense fallback={null}>
         {/* Environment map to provide reflections for high-metalness materials */}
         <Environment preset="city" />

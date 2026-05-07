@@ -21,7 +21,10 @@ export function useGestureEngine(handState: HandState): GestureEvent {
 
   useEffect(() => {
     if (!handState.isTracking || !handState.fingerPos) {
-      setGesture({ type: 'idle', primaryPos: null, dragDelta: null });
+      setGesture(prev => {
+        if (prev.type === 'idle') return prev;
+        return { type: 'idle', primaryPos: null, dragDelta: null };
+      });
       pinchStartTime.current = null;
       dragStartPos.current = null;
       return;

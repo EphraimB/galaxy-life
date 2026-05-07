@@ -61,7 +61,7 @@ export default function WorldManager({ currentWorldId, altitude }: Props) {
       </mesh>
 
       {/* 4. Active World Geometry (Massive Planet Spheres in the Background) */}
-      <group position={[0, -5000, -30000]}>
+      <group position={[0, -18002, 0]}>
         {renderedWorldId === 'earth' && (
           <mesh scale={18000}>
             <sphereGeometry args={[1, 64, 64]} />

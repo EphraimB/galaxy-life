@@ -93,7 +93,10 @@ export function useFaceTracker({ videoEl, enabled }: UseFaceTrackerOptions): Fac
     }
 
     if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
-      setState(prev => ({ ...prev, isTracking: false }));
+      setState(prev => {
+        if (!prev.isTracking) return prev;
+        return { ...prev, isTracking: false };
+      });
       animFrameRef.current = requestAnimationFrame(detect);
       return;
     }
@@ -107,9 +110,16 @@ export function useFaceTracker({ videoEl, enabled }: UseFaceTrackerOptions): Fac
     smoothedPos.current.x = lerp(smoothedPos.current.x, rawX, LERP_ALPHA);
     smoothedPos.current.y = lerp(smoothedPos.current.y, rawY, LERP_ALPHA);
 
-    setState({
-      facePos: { x: smoothedPos.current.x, y: smoothedPos.current.y },
-      isTracking: true,
+    setState(prev => {
+      const newX = smoothedPos.current.x;
+      const newY = smoothedPos.current.y;
+      if (prev.isTracking && Math.abs(prev.facePos.x - newX) < 0.001 && Math.abs(prev.facePos.y - newY) < 0.001) {
+        return prev;
+      }
+      return {
+        facePos: { x: newX, y: newY },
+        isTracking: true,
+      };
     });
 
     animFrameRef.current = requestAnimationFrame(detect);
