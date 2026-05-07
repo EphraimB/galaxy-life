@@ -60,7 +60,29 @@ export default function WorldManager({ currentWorldId, altitude }: Props) {
         />
       </mesh>
 
-      {/* 4. Active World Geometry */}
+      {/* 4. Active World Geometry (Massive Planet Spheres in the Background) */}
+      <group position={[0, -5000, -30000]}>
+        {renderedWorldId === 'earth' && (
+          <mesh scale={18000}>
+            <sphereGeometry args={[1, 64, 64]} />
+            <meshStandardMaterial color="#3b82f6" roughness={0.7} metalness={0.1} />
+          </mesh>
+        )}
+        {renderedWorldId === 'mars' && (
+          <mesh scale={18000}>
+            <sphereGeometry args={[1, 64, 64]} />
+            <meshStandardMaterial color="#ef4444" roughness={0.9} metalness={0.2} />
+          </mesh>
+        )}
+        {renderedWorldId === 'moon' && (
+          <mesh scale={18000}>
+            <sphereGeometry args={[1, 64, 64]} />
+            <meshStandardMaterial color="#9ca3af" roughness={1.0} metalness={0.1} />
+          </mesh>
+        )}
+      </group>
+
+      {/* Render environment layers (stars, etc) from the world components */}
       {renderedWorldId === 'earth' && <EarthWorld world={activeWorld} />}
       {renderedWorldId === 'mars' && <MarsWorld world={activeWorld} />}
       {renderedWorldId === 'moon' && <MoonWorld world={activeWorld} />}
