@@ -41,6 +41,27 @@ export default function Starship(props: any) {
     cameraGroupRef.current.position.y = THREE.MathUtils.lerp(cameraGroupRef.current.position.y, targetCamPos.y, 0.1);
   });
 
+  useFrame((state, delta) => {
+    // Altitude Simulation
+    if (props.flightState === 'launching') {
+      const newAlt = (props.altitude || 0) + delta * 300;
+      if (newAlt >= 500) {
+        if (props.onAltitudeChange) props.onAltitudeChange(500);
+        if (props.onFlightStateChange) props.onFlightStateChange('orbiting');
+      } else {
+        if (props.onAltitudeChange) props.onAltitudeChange(newAlt);
+      }
+    } else if (props.flightState === 'descending') {
+      const newAlt = (props.altitude || 0) - delta * 300;
+      if (newAlt <= 0) {
+        if (props.onAltitudeChange) props.onAltitudeChange(0);
+        if (props.onFlightStateChange) props.onFlightStateChange('landed');
+      } else {
+        if (props.onAltitudeChange) props.onAltitudeChange(newAlt);
+      }
+    }
+  });
+
   return (
     <group position={[0, 0, 0]}>
       {/* Eye level at 1.4 units. Camera pulled back to z=1.5 to see the pilot seats. Cinematic wide lens. */}
@@ -164,7 +185,24 @@ export default function Starship(props: any) {
           />
         </mesh>
 
+        {/* ----- 5. Cockpit Enclosure (Back walls, Floor, Ceiling) ----- */}
+        {/* Rear Hull Wall */}
+        <mesh position={[0, 1.55, windowCenterZ]} receiveShadow castShadow>
+           <cylinderGeometry args={[windowRadius, windowRadius, 3.8, 64, 1, false, Math.PI + windowAngle, Math.PI * 2 - windowAngle * 2]} />
+           <meshStandardMaterial color="#0f172a" side={THREE.DoubleSide} metalness={0.8} roughness={0.4} />
+        </mesh>
+        
+        {/* Floor */}
+        <mesh position={[0, -0.35, windowCenterZ]} rotation={[-Math.PI/2, 0, 0]} receiveShadow castShadow>
+           <circleGeometry args={[windowRadius, 64]} />
+           <meshStandardMaterial color="#0b1121" metalness={0.9} roughness={0.2} />
+        </mesh>
 
+        {/* Ceiling */}
+        <mesh position={[0, 3.45, windowCenterZ]} rotation={[Math.PI/2, 0, 0]} receiveShadow castShadow>
+           <circleGeometry args={[windowRadius, 64]} />
+           <meshStandardMaterial color="#0b1121" metalness={0.9} roughness={0.2} />
+        </mesh>
 
       </group>
     </group>

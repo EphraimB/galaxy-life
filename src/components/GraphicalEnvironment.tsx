@@ -7,6 +7,8 @@ import WorldManager from './worlds/WorldManager';
 import { HUDManager3D, HUDOverlay2D } from './hud/HUDManager';
 import { HandState } from '@/hooks/useHandTracker';
 
+export type FlightState = 'landed' | 'launching' | 'orbiting' | 'descending' | 'warping';
+
 interface Props {
   userData: UserData | null;
   facePos?: { x: number; y: number };
@@ -19,6 +21,7 @@ import * as THREE from 'three';
 export default function GraphicalEnvironment({ userData, facePos, handState, isFaceTracking }: Props) {
   const [altitude, setAltitude] = useState(0);
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
+  const [flightState, setFlightState] = useState<FlightState>('landed');
 
   return (
     <>
@@ -34,8 +37,12 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
         <Starship 
           active={!!userData} 
           userData={userData} 
+          altitude={altitude}
           onAltitudeChange={setAltitude} 
+          currentPlanetId={currentPlanetId}
           onPlanetChange={setCurrentPlanetId}
+          flightState={flightState}
+          onFlightStateChange={setFlightState}
           facePos={facePos}
         />
 
@@ -52,8 +59,16 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
     {/* 2D Overlay outside Canvas */}
     {userData && handState && (
       <HUDOverlay2D 
+        userData={userData}
         onSelectPlanet={setCurrentPlanetId}
         currentPlanetId={currentPlanetId}
+        flightState={flightState}
+        onLaunch={() => setFlightState('launching')}
+        onDescend={() => setFlightState('descending')}
+        onWarp={(planetId: string) => {
+          setCurrentPlanetId(planetId);
+          setFlightState('orbiting');
+        }}
       />
     )}
     </>

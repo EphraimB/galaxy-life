@@ -41,12 +41,33 @@ export function HUDManager3D({ handState, facePos, isFaceTracking }: HUD3DProps)
   );
 }
 
+import { WORLDS } from '@/lib/worlds';
+import { UserData } from '../OnboardingForm';
+import { FlightState } from '../GraphicalEnvironment';
+
 interface HUD2DProps {
+  userData: UserData;
   onSelectPlanet: (worldId: string) => void;
-  currentPlanetId?: string;
+  currentPlanetId: string;
+  flightState: FlightState;
+  onLaunch: () => void;
+  onDescend: () => void;
+  onWarp: (planetId: string) => void;
 }
 
-export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
+export function HUDOverlay2D({ userData, currentPlanetId, flightState, onLaunch, onDescend, onWarp }: HUD2DProps) {
+  const activeWorld = WORLDS[currentPlanetId] || WORLDS.earth;
+  const gravity = activeWorld.gravity;
+  const adjustedWeight = (userData.weight * gravity).toFixed(1);
+  const weightUnit = userData.unit === 'metric' ? 'KG' : 'LBS';
+  
+  const planets = ['earth', 'moon', 'mars'];
+  
+  const handleWarp = () => {
+    const currentIndex = planets.indexOf(currentPlanetId);
+    const nextIndex = (currentIndex + 1) % planets.length;
+    onWarp(planets[nextIndex]);
+  };
   return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '40px', boxSizing: 'border-box', zIndex: 100 }}>
           
@@ -54,22 +75,7 @@ export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pointerEvents: 'auto' }}>
             {/* Left Menu */}
             <div className={styles.glassPanel} style={{ width: '280px' }}>
-              <div className={`${styles.menuItem} ${currentPlanetId === 'earth' ? styles.active : ''}`} onClick={() => onSelectPlanet('earth')}>
-                <Globe className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>EARTH</div>
-                <ChevronRight className={styles.menuChevron} size={16} />
-              </div>
-              <div className={`${styles.menuItem} ${currentPlanetId === 'moon' ? styles.active : ''}`} onClick={() => onSelectPlanet('moon')}>
-                <Globe className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>THE MOON</div>
-                <ChevronRight className={styles.menuChevron} size={16} />
-              </div>
-              <div className={`${styles.menuItem} ${currentPlanetId === 'mars' ? styles.active : ''}`} onClick={() => onSelectPlanet('mars')}>
-                <Globe className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>MARS</div>
-                <ChevronRight className={styles.menuChevron} size={16} />
-              </div>
-              <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ marginTop: '0px', paddingTop: '10px' }}>
                 <div className={styles.subtitle} style={{ color: '#fff' }}>S.S. HORIZON</div>
                 <div className={styles.subtitle}>CLASS: EXPLORER</div>
                 <div className={styles.subtitle}>CREW: 1</div>
@@ -79,26 +85,28 @@ export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
             {/* Center Info */}
             <div className={styles.glassPanel} style={{ width: '400px', background: 'transparent', border: 'none', boxShadow: 'none', pointerEvents: 'none' }}>
               <h1 style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 5px 0', letterSpacing: '2px', color: '#fff', textTransform: 'uppercase' }}>
-                {currentPlanetId === 'earth' ? 'EARTH' : currentPlanetId === 'moon' ? 'THE MOON' : currentPlanetId === 'mars' ? 'MARS' : 'PLANETARY DATA'}
+                {activeWorld.name}
               </h1>
-              <div className={styles.subtitle} style={{ marginBottom: '20px' }}>TERRESTRIAL ENVIRONMENT</div>
+              <div className={styles.subtitle} style={{ marginBottom: '20px' }}>
+                {flightState.toUpperCase()}
+              </div>
               
               <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#cbd5e1', marginBottom: '30px' }}>
-                A temperate world with vast oceans, diverse ecosystems, and breathable atmosphere. Conditions are ideal for human life.
+                Currently in orbit or landed on {activeWorld.name}.
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <div className={styles.dataRow}>
                   <div className={styles.dataLabel}><Target size={14} /> YOUR WEIGHT HERE</div>
-                  <div className={styles.dataValue}>67.3 KG</div>
+                  <div className={styles.dataValue}>{adjustedWeight} {weightUnit}</div>
                 </div>
                 <div className={styles.dataRow}>
                   <div className={styles.dataLabel}><Activity size={14} /> GRAVITY</div>
-                  <div className={styles.dataValue}>0.82 G</div>
+                  <div className={styles.dataValue}>{gravity} G</div>
                 </div>
                 <div className={styles.dataRow}>
-                  <div className={styles.dataLabel}><Orbit size={14} /> MOVEMENT</div>
-                  <div className={styles.dataValue}>LIGHT</div>
+                  <div className={styles.dataLabel}><Orbit size={14} /> STATUS</div>
+                  <div className={styles.dataValue}>{flightState.toUpperCase()}</div>
                 </div>
               </div>
 
@@ -110,19 +118,31 @@ export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
             {/* Right Side (Actions & Mirror Glass) */}
             <div style={{ display: 'flex', gap: '20px', height: '480px' }}>
               {/* Action Buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '120px' }}>
-                <div className={styles.actionButton}>
-                  <Rocket className={styles.actionIcon} size={28} />
-                  <div className={styles.actionText}>LAUNCH</div>
-                </div>
-                <div className={styles.actionButton}>
-                  <Orbit className={styles.actionIcon} size={28} />
-                  <div className={styles.actionText}>WARP</div>
-                </div>
-                <div className={styles.actionButton}>
-                  <ArrowDownToLine className={styles.actionIcon} size={28} />
-                  <div className={styles.actionText}>DESCEND</div>
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '120px', pointerEvents: 'auto' }}>
+                {flightState === 'landed' && (
+                  <div className={styles.actionButton} onClick={onLaunch} style={{ cursor: 'pointer' }}>
+                    <Rocket className={styles.actionIcon} size={28} />
+                    <div className={styles.actionText}>LAUNCH</div>
+                  </div>
+                )}
+                {flightState === 'orbiting' && (
+                  <>
+                    <div className={styles.actionButton} onClick={handleWarp} style={{ cursor: 'pointer' }}>
+                      <Orbit className={styles.actionIcon} size={28} />
+                      <div className={styles.actionText}>WARP</div>
+                    </div>
+                    <div className={styles.actionButton} onClick={onDescend} style={{ cursor: 'pointer' }}>
+                      <ArrowDownToLine className={styles.actionIcon} size={28} />
+                      <div className={styles.actionText}>DESCEND</div>
+                    </div>
+                  </>
+                )}
+                {(flightState === 'launching' || flightState === 'descending') && (
+                  <div className={styles.actionButton} style={{ opacity: 0.5 }}>
+                    <Rocket className={styles.actionIcon} size={28} />
+                    <div className={styles.actionText}>STAND BY</div>
+                  </div>
+                )}
               </div>
 
               {/* Mirror Panel Frame (3D avatar renders behind this CSS) */}
@@ -133,7 +153,9 @@ export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
                   <User size={24} color="#94a3b8" />
                   <div>
                     <div className={styles.subtitle}>CURRENT STATE</div>
-                    <div style={{ fontSize: '13px', color: '#fff', fontWeight: 500 }}>ORBIT - WEIGHTLESS</div>
+                    <div style={{ fontSize: '13px', color: '#fff', fontWeight: 500 }}>
+                      {flightState === 'landed' ? 'SURFACE G-FORCE' : flightState === 'orbiting' ? 'ORBIT - WEIGHTLESS' : 'TRANSIT'}
+                    </div>
                   </div>
                 </div>
               </div>

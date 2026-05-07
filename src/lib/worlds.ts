@@ -27,6 +27,7 @@ export interface WorldDefinition {
   lighting: LightingConfig;
   atmosphere: AtmosphereConfig;
   terrain?: TerrainConfig;
+  gravity: number; // relative to Earth's 1.0G
 }
 
 export const WORLDS: Record<string, WorldDefinition> = {
@@ -50,7 +51,8 @@ export const WORLDS: Record<string, WorldDefinition> = {
     terrain: {
       groundColor: '#333333',
       padColor: '#3b82f6',
-    }
+    },
+    gravity: 1.0
   },
   moon: {
     id: 'moon',
@@ -72,7 +74,8 @@ export const WORLDS: Record<string, WorldDefinition> = {
     terrain: {
       groundColor: '#555555',
       padColor: '#ffffff',
-    }
+    },
+    gravity: 0.166
   },
   mars: {
     id: 'mars',
@@ -94,7 +97,8 @@ export const WORLDS: Record<string, WorldDefinition> = {
     terrain: {
       groundColor: '#b04325',
       padColor: '#f97316',
-    }
+    },
+    gravity: 0.38
   },
   space: {
     id: 'space',
@@ -112,6 +116,7 @@ export const WORLDS: Record<string, WorldDefinition> = {
       hasAtmosphere: false,
       color: '#000000',
       density: 0,
-    }
+    },
+    gravity: 0.0
   }
 };
