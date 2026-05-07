@@ -1,6 +1,5 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { HandState } from '@/hooks/useHandTracker';
 import { useGestureEngine } from '@/hooks/useGestureEngine';
@@ -9,14 +8,13 @@ import HUDMirror from './HUDMirror';
 import { User, Globe, FileText, Settings, Rocket, Orbit, ArrowDownToLine, Activity, Target, Book, BrainCircuit, ChevronRight } from 'lucide-react';
 import styles from './hud.module.css';
 
-interface Props {
+interface HUD3DProps {
   handState: HandState;
   facePos?: { x: number; y: number };
   isFaceTracking: boolean;
-  onSelectPlanet: (worldId: string) => void;
 }
 
-export default function HUDManager({ handState, facePos, isFaceTracking, onSelectPlanet }: Props) {
+export function HUDManager3D({ handState, facePos, isFaceTracking }: HUD3DProps) {
   const groupRef = useRef<THREE.Group>(null);
   
   const gesture = useGestureEngine(handState);
@@ -33,39 +31,42 @@ export default function HUDManager({ handState, facePos, isFaceTracking, onSelec
 
   return (
     <group ref={groupRef}>
-      {/* 3D Elements */}
-      <group position={[2.8, 1.4, -1.7]} rotation={[0, -Math.PI / 8, 0]}>
-        <group position={[0, 0, 0.1]} scale={1.2}>
-          <HUDMirror facePos={facePos} handState={handState} />
+        {/* 3D Elements */}
+        <group position={[2.8, 1.4, -1.7]} rotation={[0, -Math.PI / 8, 0]}>
+          <group position={[0, 0, 0.1]} scale={1.2}>
+            <HUDMirror facePos={facePos} handState={handState} />
+          </group>
         </group>
-      </group>
+    </group>
+  );
+}
 
-      {/* Fullscreen 2D UI Overlay */}
-      <Html fullscreen zIndexRange={[100, 0]}>
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '40px', boxSizing: 'border-box' }}>
+interface HUD2DProps {
+  onSelectPlanet: (worldId: string) => void;
+  currentPlanetId?: string;
+}
+
+export function HUDOverlay2D({ onSelectPlanet, currentPlanetId }: HUD2DProps) {
+  return (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '40px', boxSizing: 'border-box', zIndex: 100 }}>
           
           {/* TOP BAR */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pointerEvents: 'auto' }}>
             {/* Left Menu */}
             <div className={styles.glassPanel} style={{ width: '280px' }}>
-              <div className={`${styles.menuItem} ${styles.active}`}>
-                <User className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>OVERVIEW</div>
-                <ChevronRight className={styles.menuChevron} size={16} />
-              </div>
-              <div className={styles.menuItem} onClick={() => onSelectPlanet('earth')}>
+              <div className={`${styles.menuItem} ${currentPlanetId === 'earth' ? styles.active : ''}`} onClick={() => onSelectPlanet('earth')}>
                 <Globe className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>PLANETS</div>
+                <div className={styles.menuText}>EARTH</div>
                 <ChevronRight className={styles.menuChevron} size={16} />
               </div>
-              <div className={styles.menuItem}>
-                <FileText className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>MISSIONS</div>
+              <div className={`${styles.menuItem} ${currentPlanetId === 'moon' ? styles.active : ''}`} onClick={() => onSelectPlanet('moon')}>
+                <Globe className={styles.menuIcon} size={20} />
+                <div className={styles.menuText}>THE MOON</div>
                 <ChevronRight className={styles.menuChevron} size={16} />
               </div>
-              <div className={styles.menuItem}>
-                <Settings className={styles.menuIcon} size={20} />
-                <div className={styles.menuText}>SHIP SYSTEMS</div>
+              <div className={`${styles.menuItem} ${currentPlanetId === 'mars' ? styles.active : ''}`} onClick={() => onSelectPlanet('mars')}>
+                <Globe className={styles.menuIcon} size={20} />
+                <div className={styles.menuText}>MARS</div>
                 <ChevronRight className={styles.menuChevron} size={16} />
               </div>
               <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -77,8 +78,10 @@ export default function HUDManager({ handState, facePos, isFaceTracking, onSelec
 
             {/* Center Info */}
             <div className={styles.glassPanel} style={{ width: '400px', background: 'transparent', border: 'none', boxShadow: 'none', pointerEvents: 'none' }}>
-              <h1 style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 5px 0', letterSpacing: '2px', color: '#fff' }}>AEGIS PRIME</h1>
-              <div className={styles.subtitle} style={{ marginBottom: '20px' }}>TERRESTRIAL PLANET</div>
+              <h1 style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 5px 0', letterSpacing: '2px', color: '#fff', textTransform: 'uppercase' }}>
+                {currentPlanetId === 'earth' ? 'EARTH' : currentPlanetId === 'moon' ? 'THE MOON' : currentPlanetId === 'mars' ? 'MARS' : 'PLANETARY DATA'}
+              </h1>
+              <div className={styles.subtitle} style={{ marginBottom: '20px' }}>TERRESTRIAL ENVIRONMENT</div>
               
               <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#cbd5e1', marginBottom: '30px' }}>
                 A temperate world with vast oceans, diverse ecosystems, and breathable atmosphere. Conditions are ideal for human life.
@@ -173,8 +176,6 @@ export default function HUDManager({ handState, facePos, isFaceTracking, onSelec
             </div>
           </div>
 
-        </div>
-      </Html>
-    </group>
+    </div>
   );
 }

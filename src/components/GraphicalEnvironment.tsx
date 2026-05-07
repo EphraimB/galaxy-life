@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import { UserData } from './OnboardingForm';
 import Starship from './Starship';
 import WorldManager from './worlds/WorldManager';
-import HUDManager from './hud/HUDManager';
+import { HUDManager3D, HUDOverlay2D } from './hud/HUDManager';
 import { HandState } from '@/hooks/useHandTracker';
 
 interface Props {
@@ -19,6 +19,7 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
   const [currentPlanetId, setCurrentPlanetId] = useState('earth');
 
   return (
+    <>
     <Canvas shadows>
       <Suspense fallback={null}>
         {/* Environment map to provide reflections for high-metalness materials */}
@@ -36,16 +37,23 @@ export default function GraphicalEnvironment({ userData, facePos, handState, isF
           facePos={facePos}
         />
 
-        {/* Adaptive Interaction System HUD Layer */}
+        {/* Adaptive Interaction System HUD Layer (3D) */}
         {userData && handState && (
-          <HUDManager 
+          <HUDManager3D 
             handState={handState} 
             facePos={facePos} 
             isFaceTracking={!!isFaceTracking} 
-            onSelectPlanet={setCurrentPlanetId}
           />
         )}
       </Suspense>
     </Canvas>
+    {/* 2D Overlay outside Canvas */}
+    {userData && handState && (
+      <HUDOverlay2D 
+        onSelectPlanet={setCurrentPlanetId}
+        currentPlanetId={currentPlanetId}
+      />
+    )}
+    </>
   );
 }

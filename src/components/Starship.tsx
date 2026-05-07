@@ -18,8 +18,8 @@ export default function Starship(props: any) {
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Eye level at 1.4 units. Cinematic 50mm lens. */}
-      <PerspectiveCamera makeDefault position={[0, 1.4, 0]} fov={50} near={0.5} far={50000} />
+      {/* Eye level at 1.4 units. Camera pulled back to z=1.5 to see the pilot seats. Cinematic wide lens. */}
+      <PerspectiveCamera makeDefault position={[0, 1.4, 1.5]} fov={60} near={0.5} far={50000} />
 
       <group name="cockpit-interior">
         {/* ----- 4. Lighting Realism ----- */}
